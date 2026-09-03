@@ -27,7 +27,7 @@ export default function ComparisonTable() {
               transition={{ delay: i * 0.05 }}
               style={{ borderBottom: i < rows.length - 1 ? '1px solid rgba(197,151,87,0.04)' : 'none' }}>
               <td style={{ padding: '14px 28px', fontSize: 14, fontWeight: 500, color: '#D6D1CC' }}>{row.metric}</td>
-              <td style={{ padding: '14px 28px', fontSize: 15, color: '#5A5550' }}>{row.trad}</td>
+              <td style={{ padding: '14px 28px', fontSize: 15, color: '#8A847E' }}>{row.trad}</td>
               <td style={{ padding: '14px 28px', fontSize: 14, color: '#C59757' }}>{row.gps}</td>
             </motion.tr>
           ))}

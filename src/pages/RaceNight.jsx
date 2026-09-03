@@ -1,5 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useJSON } from '../hooks/useJSON';
+import { SkeletonList, Skeleton, LoadError } from '../components/Loading';
 import RaceReplay from '../components/RaceReplay';
 import { getPortrait } from '../data/portraits';
 
@@ -14,48 +16,64 @@ const COLORS = ['#C59757','#52B788','#5B8DEF','#E8B86D','#9B72CF','#C2653A','#4E
 const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
 
 export default function RaceNight() {
-  const [replayRaces, setReplayRaces] = useState([]);
-  useEffect(() => { fetch('/data/replays.json').then(r => r.json()).then(setReplayRaces); }, []);
+  const { data: replayRaces, loading, error, retry } = useJSON('/data/replays.json', []);
 
   const dates = useMemo(() => [...new Set(replayRaces.map(r => r.date))].sort().reverse(), [replayRaces]);
   const [selDate, setSelDate] = useState(null);
   const [selTrack, setSelTrack] = useState(null);
   const [selRace, setSelRace] = useState(null);
 
-  useEffect(() => { if (dates.length && !selDate) setSelDate(dates[0]); }, [dates, selDate]);
+  // Default to the first day until the reader picks one, derived rather than
+  // stored so there is no extra render when the data lands.
+  const activeDate = selDate ?? dates[0] ?? null;
 
-  const dayRaces = useMemo(() => replayRaces.filter(r => r.date === selDate), [replayRaces, selDate]);
+  const dayRaces = useMemo(() => replayRaces.filter(r => r.date === activeDate), [replayRaces, activeDate]);
   const tracks = useMemo(() => [...new Set(dayRaces.map(r => r.track))].sort(), [dayRaces]);
   const activeTrack = selTrack && tracks.includes(selTrack) ? selTrack : tracks[0];
   const trackRaces = useMemo(() => dayRaces.filter(r => r.track === activeTrack).sort((a, b) => a.raceNumber - b.raceNumber), [dayRaces, activeTrack]);
   const activeRace = selRace ? replayRaces.find(r => r.id === selRace) : trackRaces[0];
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px 40px 80px' }}>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px clamp(18px, 4vw, 40px) 80px' }}>
       <motion.div {...fadeUp}>
         <div className="label" style={{ color: '#C59757', marginBottom: 14, fontSize: 18 }}>Replay</div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 54px)', fontWeight: 500, color: '#D6D1CC', marginBottom: 14 }}>Live Replay</h1>
         <p style={{ fontSize: 19, color: '#8A847E', marginBottom: 14 }}>
           Choose a race and watch it unfold gate by gate with GPS tracking.
         </p>
-        <p style={{ fontSize: 18, color: '#5A5550', marginBottom: 48 }}>
-          {replayRaces.length} races · {new Set(replayRaces.map(r => r.track)).size} tracks · {dates.length} race days
-        </p>
+        <div style={{ marginBottom: 48, minHeight: 26 }}>
+          {loading ? (
+            <Skeleton height={20} width={280} />
+          ) : (
+            <p style={{ fontSize: 18, color: '#8A847E' }}>
+              {replayRaces.length} races · {new Set(replayRaces.map(r => r.track)).size} tracks · {dates.length} race days
+            </p>
+          )}
+        </div>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the replay data." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={18} width={110} style={{ marginBottom: 14 }} />
+          <SkeletonList rows={4} height={92} />
+        </div>
+      ) : (
+        <>
       {/* Date selector */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ marginBottom: 28 }}>
         <div className="label" style={{ marginBottom: 14, fontSize: 15 }}>Race Day</div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {dates.map(d => {
             const dayName = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            const active = d === selDate;
+            const active = d === activeDate;
             return (
               <button key={d} onClick={() => { setSelDate(d); setSelTrack(null); setSelRace(null); }}
                 style={{ padding: '14px 24px', borderRadius: 4, cursor: 'pointer', transition: 'all 250ms',
                   background: active ? '#141A10' : 'transparent',
                   border: active ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-                  color: active ? '#C59757' : '#5A5550', fontSize: 18, fontWeight: 500 }}>
+                  color: active ? '#C59757' : '#8A847E', fontSize: 18, fontWeight: 500 }}>
                 {dayName}
               </button>
             );
@@ -74,7 +92,7 @@ export default function RaceNight() {
                 style={{ padding: '14px 24px', borderRadius: 4, cursor: 'pointer', transition: 'all 250ms',
                   background: active ? '#141A10' : 'transparent',
                   border: active ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-                  color: active ? '#D6D1CC' : '#5A5550', fontSize: 18, fontWeight: 500 }}>
+                  color: active ? '#D6D1CC' : '#8A847E', fontSize: 18, fontWeight: 500 }}>
                 {TRACK_NAMES[t] || t}
               </button>
             );
@@ -94,8 +112,8 @@ export default function RaceNight() {
                   display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                   background: active ? '#141A10' : 'transparent',
                   border: active ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)' }}>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 26, color: active ? '#C59757' : '#5A5550' }}>{r.raceNumber}</div>
-                <div style={{ fontSize: 12, color: '#5A5550', marginTop: 2 }}>{r.fieldSize}h</div>
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 26, color: active ? '#C59757' : '#8A847E' }}>{r.raceNumber}</div>
+                <div style={{ fontSize: 12, color: '#8A847E', marginTop: 2 }}>{r.fieldSize}h</div>
               </button>
             );
           })}
@@ -121,14 +139,14 @@ export default function RaceNight() {
                     alignItems: 'center', padding: '18px 32px', gap: 16,
                     borderBottom: i < activeRace.horses.length - 1 ? '1px solid rgba(197,151,87,0.03)' : 'none',
                   }}>
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, color: i === 0 ? '#C59757' : '#5A5550' }}>
-                      {horse.finalPos || '—'}
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, color: i === 0 ? '#C59757' : '#8A847E' }}>
+                      {horse.finalPos || '–'}
                     </div>
                     <div style={{ width: 42, height: 42, borderRadius: 5, overflow: 'hidden', border: `1px solid ${color}40` }}>
                       <img src={getPortrait(horse.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div style={{ fontSize: 20, fontWeight: 500, color: '#D6D1CC' }}>{horse.name}</div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#5A5550' }}>Post {horse.post}</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>Post {horse.post}</div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{horse.odds}</div>
                   </div>
                 );
@@ -136,6 +154,8 @@ export default function RaceNight() {
             </div>
           </motion.div>
         </AnimatePresence>
+      )}
+        </>
       )}
     </div>
   );

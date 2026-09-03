@@ -15,7 +15,7 @@
 
   --color-text: #D6D1CC;
   --color-text-secondary: #8A847E;
-  --color-text-muted: #5A5550;
+  --color-text-muted: #8A847E;
 
   --color-border: rgba(197, 151, 87, 0.06);
   --color-border-active: rgba(197, 151, 87, 0.15);
@@ -94,7 +94,7 @@
     font-weight: 500;
     letter-spacing: 2.5px;
     text-transform: uppercase;
-    color: #5A5550;
+    color: #8A847E;
   }
 
   .btn-primary {

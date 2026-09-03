@@ -28,7 +28,7 @@ const LOADING_PUNS = [
 const SUGGESTIONS = [
   "Who do you think will win Tampa Bay R7 on March 28?",
   "Which horse has the best closing speed in the Aqueduct R9 field?",
-  "I live in Lexington, KY — any races near me this weekend?",
+  "I live in Lexington, KY. Any races near me this weekend?",
   "Explain what ground loss means and why it matters",
   "What's the difference between a stalker and a closer?",
   "Which horse is the best value bet this week based on GPS data?",
@@ -52,7 +52,8 @@ export default function HorseLLM() {
   useEffect(() => {
     if (loading) {
       let idx = Math.floor(Math.random() * LOADING_PUNS.length);
-      setLoadingPun(LOADING_PUNS[idx]);
+      // Advance on a timer only; the first pun is whatever state already holds,
+      // so no state is written synchronously during the effect.
       punInterval.current = setInterval(() => {
         idx = (idx + 1) % LOADING_PUNS.length;
         setLoadingPun(LOADING_PUNS[idx]);
@@ -73,7 +74,7 @@ export default function HorseLLM() {
     setLoading(true);
 
     try {
-      // Send only user/assistant messages — server builds RAG context
+      // Send only user/assistant messages; the server builds the RAG context
       const chatMessages = newMessages.slice(-10).map(m => ({ role: m.role, content: m.content }));
 
       const res = await fetch('/api/chat', {
@@ -85,7 +86,7 @@ export default function HorseLLM() {
       const data = await res.json();
 
       if (res.status === 429) {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Whoa there — too many questions at once! Give me a moment to catch my breath.' }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Whoa there, too many questions at once! Give me a moment to catch my breath.' }]);
       } else if (res.status === 400) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.error || 'Invalid request. Try a shorter question.' }]);
       } else if (data.content) {
@@ -93,7 +94,7 @@ export default function HorseLLM() {
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I couldn\'t process that. Try again.' }]);
       }
-    } catch (err) {
+    } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: 'Connection error. Please try again.' }]);
     }
 
@@ -102,7 +103,7 @@ export default function HorseLLM() {
   };
 
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', padding: '120px 32px 0', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 0px)' }}>
+    <div style={{ maxWidth: 800, margin: '0 auto', padding: '120px clamp(18px, 4vw, 32px) 0', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 0px)' }}>
 
       {/* Header */}
       <div style={{ marginBottom: 24, flexShrink: 0 }}>
@@ -209,7 +210,7 @@ export default function HorseLLM() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: input.trim() ? 'rgba(197,151,87,0.15)' : 'transparent',
               border: input.trim() ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-              color: input.trim() ? '#C59757' : '#5A5550',
+              color: input.trim() ? '#C59757' : '#8A847E',
               transition: 'all 250ms',
             }}>
             <Send style={{ width: 16, height: 16 }} />

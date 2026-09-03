@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Trophy, TrendingUp, ChevronRight, Check, Crown, Flame, Target, Zap, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { getPortrait } from '../data/portraits';
+import { useJSON } from '../hooks/useJSON';
+import { SkeletonList, SkeletonCards, Skeleton, LoadError } from '../components/Loading';
 
 // ── Hay currency icon ──
 const Hay = ({ size = 16, style = {} }) => (
@@ -26,14 +28,13 @@ function buildMarkets(forecastRaces) {
   (forecastRaces || []).forEach(race => {
     const topHorses = [...race.horses].sort((a, b) => (b.gpsScore || 0) - (a.gpsScore || 0));
     const topSpeed = [...race.horses].sort((a, b) => (b.peakMPH || 0) - (a.peakMPH || 0));
-    const topCloser = [...race.horses].sort((a, b) => (b.closingMPH || 0) - (a.closingMPH || 0));
 
     // Winner market
     markets.push({
       id: `${race.id}-winner`,
       type: 'winner',
       category: 'RACE WINNER',
-      title: `${race.trackName} R${race.raceNumber} — Who wins?`,
+      title: `${race.trackName} R${race.raceNumber}: Who wins?`,
       subtitle: `${race.date} · ${race.distance} ${race.surface} · ${race.purse}`,
       icon: '🏆',
       volume: Math.floor(Math.random() * 40000 + 15000),
@@ -117,6 +118,15 @@ const CATEGORIES = ['All', 'Race Winner', 'GPS Gate', 'GPS Insight', 'Event'];
 const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
 
 function MarketCard({ market, onBet }) {
+  // Stable pseudo-count derived from the market id: a placeholder figure that
+  // must not change between renders.
+  const bettorCount = useMemo(() => {
+    const key = String(market.id ?? market.title ?? '');
+    let hash = 0;
+    for (let i = 0; i < key.length; i++) hash = (hash * 31 + key.charCodeAt(i)) % 100000;
+    return (hash % 30) + 10;
+  }, [market.id, market.title]);
+
   const catColor = market.category === 'RACE WINNER' ? '#C59757' : market.category === 'GPS GATE' ? '#52B788' : market.category === 'GPS INSIGHT' ? '#5B8DEF' : '#E8B86D';
 
   return (
@@ -139,7 +149,7 @@ function MarketCard({ market, onBet }) {
         <h3 style={{ fontSize: 19, fontWeight: 600, color: '#D6D1CC', lineHeight: 1.4, marginBottom: 6 }}>
           {market.title}
         </h3>
-        <p style={{ fontSize: 16, color: '#5A5550' }}>{market.subtitle}</p>
+        <p style={{ fontSize: 16, color: '#8A847E' }}>{market.subtitle}</p>
       </div>
 
       {/* Options */}
@@ -153,7 +163,7 @@ function MarketCard({ market, onBet }) {
             )}
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 16, fontWeight: 500, color: '#D6D1CC' }}>{opt.name}</div>
-              {opt.odds && <div style={{ fontSize: 17, color: '#5A5550', fontFamily: 'var(--font-mono)' }}>{opt.odds}</div>}
+              {opt.odds && <div style={{ fontSize: 17, color: '#8A847E', fontFamily: 'var(--font-mono)' }}>{opt.odds}</div>}
             </div>
 
             {/* Progress bar */}
@@ -182,11 +192,11 @@ function MarketCard({ market, onBet }) {
 
       {/* Footer */}
       <div style={{ padding: '14px 28px', borderTop: '1px solid rgba(197,151,87,0.04)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 16, color: '#5A5550' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 16, color: '#8A847E' }}>
           <Hay size={16} /> <span style={{ fontFamily: 'var(--font-mono)' }}>{market.volume.toLocaleString()}</span> vol.
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 16, color: '#5A5550' }}>
-          <Users style={{ width: 14, height: 14 }} /> {Math.floor(Math.random() * 30 + 10)} bettors
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 16, color: '#8A847E' }}>
+          <Users style={{ width: 14, height: 14 }} /> {bettorCount} bettors
         </div>
       </div>
     </div>
@@ -213,7 +223,7 @@ function BetModal({ market, option, onClose, onConfirm }) {
           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 500, color: '#D6D1CC', marginBottom: 6 }}>
             Place Your Bet
           </h3>
-          <p style={{ fontSize: 16, color: '#5A5550' }}>{market.title}</p>
+          <p style={{ fontSize: 16, color: '#8A847E' }}>{market.title}</p>
         </div>
 
         <div style={{ padding: 16, borderRadius: 4, background: 'rgba(197,151,87,0.04)', border: '1px solid rgba(197,151,87,0.08)', marginBottom: 20 }}>
@@ -225,14 +235,14 @@ function BetModal({ market, option, onClose, onConfirm }) {
             )}
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 17, fontWeight: 600, color: '#C59757' }}>{option.name}</div>
-              <div style={{ fontSize: 17, color: '#5A5550' }}>{option.pct}% chance</div>
+              <div style={{ fontSize: 17, color: '#8A847E' }}>{option.pct}% chance</div>
             </div>
           </div>
         </div>
 
         {/* Amount */}
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 16, color: '#5A5550', marginBottom: 10, fontWeight: 500, letterSpacing: '1px', textTransform: 'uppercase' }}>
+          <div style={{ fontSize: 16, color: '#8A847E', marginBottom: 10, fontWeight: 500, letterSpacing: '1px', textTransform: 'uppercase' }}>
             Wager Amount
           </div>
           <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
@@ -242,7 +252,7 @@ function BetModal({ market, option, onClose, onConfirm }) {
                 fontFamily: 'var(--font-mono)', transition: 'all 200ms',
                 background: amount === a ? 'rgba(197,151,87,0.12)' : 'transparent',
                 border: amount === a ? '1px solid rgba(197,151,87,0.25)' : '1px solid rgba(197,151,87,0.06)',
-                color: amount === a ? '#C59757' : '#5A5550',
+                color: amount === a ? '#C59757' : '#8A847E',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               }}>
                 {a} <Hay size={12} />
@@ -254,13 +264,13 @@ function BetModal({ market, option, onClose, onConfirm }) {
         {/* Payout */}
         <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 4, background: '#1C2418', marginBottom: 24 }}>
           <div>
-            <div style={{ fontSize: 17, color: '#5A5550', marginBottom: 4 }}>You risk</div>
+            <div style={{ fontSize: 17, color: '#8A847E', marginBottom: 4 }}>You risk</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 600, color: '#D6D1CC', display: 'flex', alignItems: 'center', gap: 6 }}>
               {amount} <Hay size={16} />
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 17, color: '#5A5550', marginBottom: 4 }}>Potential payout</div>
+            <div style={{ fontSize: 17, color: '#8A847E', marginBottom: 4 }}>Potential payout</div>
             <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 600, color: '#52B788', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 6 }}>
               +{payout} <Hay size={16} />
             </div>
@@ -270,7 +280,7 @@ function BetModal({ market, option, onClose, onConfirm }) {
         <div style={{ display: 'flex', gap: 12 }}>
           <button onClick={onClose} style={{
             flex: 1, padding: '14px', borderRadius: 4, cursor: 'pointer', fontSize: 16, fontWeight: 500,
-            background: 'transparent', border: '1px solid rgba(197,151,87,0.1)', color: '#5A5550',
+            background: 'transparent', border: '1px solid rgba(197,151,87,0.1)', color: '#8A847E',
           }}>
             Cancel
           </button>
@@ -295,8 +305,7 @@ export default function EquiBets() {
   const [category, setCategory] = useState('All');
   const [betModal, setBetModal] = useState(null);
   const [toast, setToast] = useState(null);
-  const [forecastRaces, setForecastRaces] = useState([]);
-  useEffect(() => { fetch('/data/forecast.json').then(r => r.json()).then(setForecastRaces); }, []);
+  const { data: forecastRaces, loading, error, retry } = useJSON('/data/forecast.json', []);
 
   const allMarkets = useMemo(() => buildMarkets(forecastRaces), [forecastRaces]);
 
@@ -315,7 +324,7 @@ export default function EquiBets() {
   };
 
   return (
-    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '120px 32px 80px' }}>
+    <div style={{ maxWidth: 1100, margin: '0 auto', padding: '120px clamp(18px, 4vw, 32px) 80px' }}>
 
       {/* Header */}
       <motion.div {...fadeUp}>
@@ -331,13 +340,22 @@ export default function EquiBets() {
         <p style={{ fontSize: 18, color: '#8A847E', maxWidth: 680, lineHeight: 1.7, marginBottom: 14 }}>
           Bet on races, GPS outcomes, and live events with haysticks. Compete with friends, climb the leaderboard, and earn tickets to real races.
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 18, color: '#5A5550', marginBottom: 42 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 18, color: '#8A847E', marginBottom: 42 }}>
           <Hay size={20} /> <span style={{ fontFamily: 'var(--font-mono)', color: '#C59757', fontWeight: 600 }}>1,000</span> haysticks to start · Earn more by winning bets
         </div>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the prediction markets." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={44} width={340} radius={6} style={{ marginBottom: 36 }} />
+          <SkeletonList rows={5} height={110} />
+        </div>
+      ) : (
+        <>
       {/* Tabs */}
-      <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ display: 'flex', gap: 6, marginBottom: 36 }}>
+      <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 36 }}>
         {[
           { key: 'markets', label: 'Markets', icon: TrendingUp },
           { key: 'leaderboard', label: 'Leaderboard', icon: Trophy },
@@ -350,7 +368,7 @@ export default function EquiBets() {
               cursor: 'pointer', fontSize: 18, fontWeight: 500, transition: 'all 250ms',
               background: active ? '#141A10' : 'transparent',
               border: active ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-              color: active ? '#C59757' : '#5A5550',
+              color: active ? '#C59757' : '#8A847E',
             }}>
               <tab.icon style={{ width: 18, height: 18 }} /> {tab.label}
             </button>
@@ -372,19 +390,19 @@ export default function EquiBets() {
                     transition: 'all 250ms',
                     background: active ? '#141A10' : 'transparent',
                     border: active ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-                    color: active ? '#D6D1CC' : '#5A5550',
+                    color: active ? '#D6D1CC' : '#8A847E',
                   }}>
                     {c}
                   </button>
                 );
               })}
-              <div style={{ marginLeft: 'auto', fontSize: 17, color: '#5A5550', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ marginLeft: 'auto', fontSize: 17, color: '#8A847E', display: 'flex', alignItems: 'center', gap: 6 }}>
                 {filtered.length} market{filtered.length !== 1 ? 's' : ''}
               </div>
             </div>
 
             {/* Market grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(340px, 100%), 1fr))', gap: 20 }}>
               {filtered.map((m, i) => (
                 <motion.div key={m.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                   <MarketCard market={m} onBet={handleBet} />
@@ -421,7 +439,7 @@ export default function EquiBets() {
                     }}>
                       {isFirst && <Crown style={{ width: 28, height: 28, color: '#C59757' }} />}
                       <span style={{ fontFamily: 'var(--font-serif)', fontSize: isFirst ? 32 : 24, fontWeight: 500, color: podiumColor }}>{rankLabel}</span>
-                      <span style={{ fontSize: 17, color: '#5A5550' }}>{u.betsWon}W - {u.betsLost}L</span>
+                      <span style={{ fontSize: 17, color: '#8A847E' }}>{u.betsWon}W - {u.betsLost}L</span>
                       {u.streak > 0 && (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 17, color: '#E8B86D' }}>
                           <Flame style={{ width: 12, height: 12 }} /> {u.streak} streak
@@ -437,7 +455,7 @@ export default function EquiBets() {
             <div className="card-flat" style={{ overflow: 'hidden' }}>
               <div style={{ padding: '16px 24px', borderBottom: '1px solid rgba(197,151,87,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 500, color: '#D6D1CC' }}>Full Rankings</h3>
-                <span style={{ fontSize: 16, color: '#5A5550' }}>Group: {GROUP.name}</span>
+                <span style={{ fontSize: 16, color: '#8A847E' }}>Group: {GROUP.name}</span>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '50px 1fr 100px 100px 80px 80px', padding: '10px 24px', borderBottom: '1px solid rgba(197,151,87,0.06)' }}>
@@ -455,7 +473,7 @@ export default function EquiBets() {
                     borderBottom: i < DEMO_USERS.length - 1 ? '1px solid rgba(197,151,87,0.03)' : 'none',
                     background: i === 0 ? 'rgba(197,151,87,0.03)' : 'transparent',
                   }}>
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: i < 3 ? '#C59757' : '#5A5550' }}>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 20, color: i < 3 ? '#C59757' : '#8A847E' }}>
                       {i + 1}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -474,7 +492,7 @@ export default function EquiBets() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 17, color: '#E8B86D' }}>
                           <Flame style={{ width: 14, height: 14 }} /> {u.streak}
                         </div>
-                      ) : <span style={{ fontSize: 17, color: '#5A5550' }}>—</span>}
+                      ) : <span style={{ fontSize: 17, color: '#8A847E' }}>–</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 17, fontFamily: 'var(--font-mono)' }}>
                       {change > 0 ? (
@@ -517,7 +535,7 @@ export default function EquiBets() {
                   <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 500, color: '#D6D1CC', marginBottom: 8 }}>
                     {GROUP.name}
                   </h2>
-                  <p style={{ fontSize: 16, color: '#5A5550' }}>
+                  <p style={{ fontSize: 16, color: '#8A847E' }}>
                     Created {GROUP.created} · {GROUP.totalBets} total bets placed
                   </p>
                 </div>
@@ -529,7 +547,7 @@ export default function EquiBets() {
                   ].map(s => (
                     <div key={s.label} style={{ textAlign: 'center' }}>
                       <div style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 400, color: '#C59757' }}>{s.value}</div>
-                      <div style={{ fontSize: 17, color: '#5A5550', fontWeight: 500 }}>{s.label}</div>
+                      <div style={{ fontSize: 17, color: '#8A847E', fontWeight: 500 }}>{s.label}</div>
                     </div>
                   ))}
                 </div>
@@ -538,7 +556,7 @@ export default function EquiBets() {
 
             {/* Members grid */}
             <div className="label" style={{ marginBottom: 16, fontSize: 16 }}>Members</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16, marginBottom: 32 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px, 100%), 1fr))', gap: 16, marginBottom: 32 }}>
               {DEMO_USERS.map((u, i) => {
                 const change = u.haysticks - 1000;
                 return (
@@ -549,14 +567,14 @@ export default function EquiBets() {
                         position: 'absolute', bottom: -4, right: -4, width: 20, height: 20, borderRadius: '50%',
                         background: i < 3 ? '#C59757' : '#1C2418', border: '2px solid #141A10',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 10, fontWeight: 700, color: i < 3 ? '#0D110A' : '#5A5550',
+                        fontSize: 10, fontWeight: 700, color: i < 3 ? '#0D110A' : '#8A847E',
                       }}>
                         {i + 1}
                       </div>
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 16, fontWeight: 600, color: '#D6D1CC', marginBottom: 4 }}>{u.name}</div>
-                      <div style={{ display: 'flex', gap: 12, fontSize: 16, color: '#5A5550' }}>
+                      <div style={{ display: 'flex', gap: 12, fontSize: 16, color: '#8A847E' }}>
                         <span>{u.betsWon + u.betsLost} bets</span>
                         <span style={{ color: '#52B788' }}>{u.betsWon}W</span>
                         <span style={{ color: '#C2653A' }}>{u.betsLost}L</span>
@@ -584,7 +602,7 @@ export default function EquiBets() {
               <button style={{
                 flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 padding: '16px 28px', borderRadius: 4, cursor: 'pointer', fontSize: 16, fontWeight: 500,
-                background: 'transparent', border: '1px solid rgba(197,151,87,0.1)', color: '#5A5550',
+                background: 'transparent', border: '1px solid rgba(197,151,87,0.1)', color: '#8A847E',
                 letterSpacing: '1px', textTransform: 'uppercase',
               }}>
                 Create New Group <ChevronRight style={{ width: 16, height: 16 }} />
@@ -617,6 +635,8 @@ export default function EquiBets() {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

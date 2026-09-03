@@ -42,9 +42,9 @@ export default function Home() {
       </section>
 
       {/* ═══ STATS BAR ═══ */}
-      <section style={{ maxWidth: 1280, margin: '-60px auto 0', padding: '0 40px', position: 'relative', zIndex: 20 }}>
+      <section style={{ maxWidth: 1280, margin: '-60px auto 0', padding: '0 clamp(18px, 4vw, 40px)', position: 'relative', zIndex: 20 }}>
         <motion.div {...fadeUp} transition={{ duration: 0.7 }}>
-          <div className="card-flat" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', padding: '52px 0' }}>
+          <div className="card-flat" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(160px, 100%), 1fr))', padding: 'clamp(28px, 5vw, 52px) 0' }}>
             {[
               { value: '12,919', label: 'Horses Profiled' },
               { value: '52,767', label: 'Race Starts Analyzed' },
@@ -52,10 +52,10 @@ export default function Home() {
               { value: '8.1', label: 'Avg Field Size' },
             ].map((stat, i) => (
               <div key={stat.label} style={{
-                textAlign: 'center', padding: '0 28px',
+                textAlign: 'center', padding: '12px clamp(12px, 2vw, 28px)', minWidth: 0,
                 borderRight: i < 3 ? '1px solid rgba(197, 151, 87, 0.08)' : 'none',
               }}>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 400, color: '#C59757', marginBottom: 12 }}>
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(30px, 5vw, 52px)', fontWeight: 400, color: '#C59757', marginBottom: 12 }}>
                   {stat.value}
                 </div>
                 <div className="label" style={{ fontSize: 14 }}>{stat.label}</div>
@@ -73,18 +73,18 @@ export default function Home() {
             Six tools that transform GPS telemetry into insight
           </h2>
           <p style={{ fontSize: 20, color: '#8A847E', maxWidth: 660, lineHeight: 1.7, marginTop: 22 }}>
-            We analyze all 52,000+ race starts across 71 tracks — and for the 32 GPS-equipped tracks, we unlock speed, stride, and ground loss data that traditional methods simply cannot capture.
+            We analyze all 52,000+ race starts across 71 tracks, and for the 32 GPS-equipped tracks we unlock speed, stride, and ground loss data that traditional methods simply cannot capture.
           </p>
         </motion.div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(500px, 100%), 1fr))', gap: 28 }}>
           {[
             { label: 'Replay', title: 'Live Replay', desc: 'Gate-by-gate GPS tracking. Watch positions evolve in real time with animated telemetry data from every horse in the field.', to: '/live-replay' },
             { label: 'Analysis', title: 'Deep Dive', desc: 'Speed traces, stride patterns, and ground loss metrics. See what chart callers with binoculars physically cannot observe.', to: '/deep-dive' },
             { label: 'Profiling', title: 'Horse Profiles', desc: 'Running style classification, stride signatures, and performance radar charts built from each horse\'s GPS history.', to: '/horse-profiles' },
             { label: 'Prediction', title: 'Forecast', desc: 'AI-powered pace projections and value picks for upcoming races based on GPS-derived running styles and patterns.', to: '/forecast' },
-            { label: 'AI Assistant', title: 'HorseLLM', desc: 'Your sharpest friend at the track — ask anything about horses, races, or GPS data and get instant, data-backed answers powered by 12,919 profiles.', to: '/horsellm' },
-            { label: 'Matchmaking', title: 'StableMatch', desc: 'Swipe through upcoming horses like a dating app. Set your style, odds, and GPS preferences — then build a betting stable tailored to you.', to: '/stable-match' },
+            { label: 'AI Assistant', title: 'HorseLLM', desc: 'Your sharpest friend at the track. Ask anything about horses, races, or GPS data and get instant, data-backed answers powered by 12,919 profiles.', to: '/horsellm' },
+            { label: 'Matchmaking', title: 'StableMatch', desc: 'Swipe through upcoming horses like a dating app. Set your style, odds, and GPS preferences, then build a betting stable tailored to you.', to: '/stable-match' },
           ].map((f, i) => (
             <motion.div key={f.title} {...fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }}>
               <Link to={f.to} className="card" style={{ display: 'block', padding: 44, textDecoration: 'none', height: '100%' }}>
@@ -124,7 +124,7 @@ export default function Home() {
             Ready to see racing differently?
           </h2>
           <p style={{ fontSize: 20, color: '#8A847E', marginBottom: 60, maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
-            Dive into a featured race with full GPS telemetry — speed, stride, ground loss, and more.
+            Dive into a featured race with full GPS telemetry: speed, stride, ground loss, and more.
           </p>
           <Link to="/live-replay" className="btn-primary" style={{ fontSize: 17, padding: '17px 34px' }}>
             Launch Live Replay <ArrowRight style={{ width: 18, height: 18 }} />
@@ -138,7 +138,7 @@ export default function Home() {
           <span style={{ fontSize: 18, fontWeight: 600, color: '#D6D1CC' }}>
             EQUI<span style={{ color: '#C59757' }}>METRICS</span>
           </span>
-          <p style={{ fontSize: 15, color: '#5A5550' }}>
+          <p style={{ fontSize: 15, color: '#8A847E' }}>
             985,000+ GPS data points &middot; 32 tracks &middot; Data by Equibase &middot; 2026 Econ Games
           </p>
           <div style={{ display: 'flex', gap: 28, fontSize: 16 }}>
@@ -148,9 +148,9 @@ export default function Home() {
               { to: '/forecast', label: 'Forecast' },
               { to: '/gps-edge', label: 'GPS Edge' },
             ].map(l => (
-              <Link key={l.to} to={l.to} style={{ color: '#5A5550', textDecoration: 'none', transition: 'color 300ms' }}
+              <Link key={l.to} to={l.to} style={{ color: '#8A847E', textDecoration: 'none', transition: 'color 300ms' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#C59757'}
-                onMouseLeave={e => e.currentTarget.style.color = '#5A5550'}>
+                onMouseLeave={e => e.currentTarget.style.color = '#8A847E'}>
                 {l.label}
               </Link>
             ))}

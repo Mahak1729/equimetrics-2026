@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styleColors, scenarioColors } from '../data/forecastConstants';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { useJSON } from '../hooks/useJSON';
+import { SkeletonList, SkeletonCards, Skeleton, LoadError } from '../components/Loading';
 import { getPortrait } from '../data/portraits';
 
 // Track full names
@@ -44,12 +46,13 @@ function MiniSparkline({ data, color, width = 72, height = 24 }) {
 }
 
 export default function Preview() {
-  const [allRacesRaw, setAllRacesRaw] = useState([]);
-  const [forecastRaces, setForecastRaces] = useState([]);
-  useEffect(() => {
-    fetch('/data/races.json').then(r => r.json()).then(setAllRacesRaw);
-    fetch('/data/forecast.json').then(r => r.json()).then(setForecastRaces);
-  }, []);
+  const races = useJSON('/data/races.json', []);
+  const forecast = useJSON('/data/forecast.json', []);
+  const allRacesRaw = races.data;
+  const forecastRaces = forecast.data;
+  const loading = races.loading || forecast.loading;
+  const error = races.error || forecast.error;
+  const retry = () => { races.retry(); forecast.retry(); };
 
   // Get unique dates and tracks
   const dates = useMemo(() => [...new Set(allRacesRaw.map(r => r.date))].sort(), [allRacesRaw]);
@@ -57,11 +60,12 @@ export default function Preview() {
   const [selTrack, setSelTrack] = useState(null);
   const [selRaceNum, setSelRaceNum] = useState(null);
 
-  // Auto-select date when data loads
-  useEffect(() => { if (dates.length && !selDate) setSelDate(dates[2] || dates[0]); }, [dates, selDate]);
+  // Default to the third race day (the first with a full card) until the
+  // reader picks one. Derived rather than stored, so no extra render pass.
+  const activeDate = selDate ?? dates[2] ?? dates[0] ?? null;
 
   // Filter races for selected date
-  const dayRaces = useMemo(() => allRacesRaw.filter(r => r.date === selDate), [allRacesRaw, selDate]);
+  const dayRaces = useMemo(() => allRacesRaw.filter(r => r.date === activeDate), [allRacesRaw, activeDate]);
   const tracks = useMemo(() => {
     const t = [...new Set(dayRaces.map(r => r.track))].sort((a, b) => {
       // Sort GPS-heavy tracks first
@@ -84,7 +88,7 @@ export default function Preview() {
   const trackName = TRACK_NAMES[activeTrack] || TRACK_NAMES[activeTrack?.trim()] || activeTrack;
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px 40px 80px' }}>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px clamp(18px, 4vw, 40px) 80px' }}>
 
       {/* Header */}
       <motion.div {...fadeUp}>
@@ -101,11 +105,21 @@ export default function Preview() {
             Forecasts combine each horse's GPS career history with the full field's profiles and the race's specific conditions. We model how the entrants' running styles will shape the pace, accounting for distance, surface, jockey and trainer history, and how each horse's strengths translate to that exact setup. Picks are horses whose modeled probability of winning is higher than what the morning-line odds imply.
           </p>
         </div>
-        <p style={{ fontSize: 17, color: '#5A5550', marginBottom: 56 }}>
+        <p style={{ fontSize: 17, color: '#8A847E', marginBottom: 56 }}>
           {allRacesRaw.length} races · {dates.length} race days · {new Set(allRacesRaw.map(r => r.track)).size} tracks
         </p>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the race card." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={18} width={110} style={{ marginBottom: 14 }} />
+          <Skeleton height={52} width="100%" style={{ marginBottom: 28 }} />
+          <SkeletonList rows={4} height={96} />
+        </div>
+      ) : (
+        <>
       {/* ── DATE SELECTOR ── */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ marginBottom: 32 }}>
         <div className="label" style={{ marginBottom: 14, fontSize: 15 }}>Race Day</div>
@@ -113,17 +127,17 @@ export default function Preview() {
           {dates.map(d => {
             const dayName = new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
             const count = allRacesRaw.filter(r => r.date === d).length;
-            const isActive = d === selDate;
+            const isActive = d === activeDate;
             return (
               <button key={d} onClick={() => { setSelDate(d); setSelTrack(null); setSelRaceNum(null); }}
                 style={{
                   padding: '14px 22px', borderRadius: 4, cursor: 'pointer', transition: 'all 250ms',
                   background: isActive ? '#141A10' : 'transparent',
                   border: isActive ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-                  color: isActive ? '#C59757' : '#5A5550',
+                  color: isActive ? '#C59757' : '#8A847E',
                 }}>
                 <div style={{ fontSize: 18, fontWeight: 500 }}>{dayName}</div>
-                <div style={{ fontSize: 14, color: '#5A5550', marginTop: 4 }}>{count} races</div>
+                <div style={{ fontSize: 14, color: '#8A847E', marginTop: 4 }}>{count} races</div>
               </button>
             );
           })}
@@ -145,7 +159,7 @@ export default function Preview() {
                   padding: '14px 22px', borderRadius: 4, cursor: 'pointer', transition: 'all 250ms',
                   background: isActive ? '#141A10' : 'transparent',
                   border: isActive ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-                  color: isActive ? '#D6D1CC' : '#5A5550',
+                  color: isActive ? '#D6D1CC' : '#8A847E',
                 }}>
                 <div style={{ fontSize: 18, fontWeight: 500, display: 'flex', alignItems: 'center', gap: 10 }}>
                   {name}
@@ -155,7 +169,7 @@ export default function Preview() {
                     </span>
                   )}
                 </div>
-                <div style={{ fontSize: 14, color: '#5A5550', marginTop: 4 }}>{tRaces.length} races · {tAvgGps}% GPS</div>
+                <div style={{ fontSize: 14, color: '#8A847E', marginTop: 4 }}>{tRaces.length} races · {tAvgGps}% GPS</div>
               </button>
             );
           })}
@@ -176,12 +190,12 @@ export default function Preview() {
                   background: isActive ? '#141A10' : 'transparent',
                   border: isActive ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
                 }}>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, color: isActive ? '#C59757' : '#5A5550' }}>
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, color: isActive ? '#C59757' : '#8A847E' }}>
                   {r.raceNumber}
                 </div>
                 <div style={{
                   fontSize: 11, fontFamily: 'var(--font-mono)', marginTop: 2,
-                  color: r.gpsPct >= 80 ? '#52B788' : r.gpsPct >= 40 ? '#E8B86D' : '#5A5550',
+                  color: r.gpsPct >= 80 ? '#52B788' : r.gpsPct >= 40 ? '#E8B86D' : '#8A847E',
                 }}>
                   {r.gpsPct}%
                 </div>
@@ -203,13 +217,13 @@ export default function Preview() {
                 {trackName} Race {activeRace.raceNumber}
               </h2>
               <div style={{ display: 'flex', gap: 14, alignItems: 'center' }}>
-                <span style={{ fontSize: 17, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>
+                <span style={{ fontSize: 17, fontFamily: 'var(--font-mono)', color: '#8A847E' }}>
                   {activeRace.fieldSize} horses
                 </span>
                 <span style={{
                   fontSize: 15, fontFamily: 'var(--font-mono)', padding: '5px 12px', borderRadius: 4,
                   background: activeRace.gpsPct >= 80 ? 'rgba(82,183,136,0.1)' : activeRace.gpsPct >= 40 ? 'rgba(232,184,109,0.1)' : 'rgba(90,85,80,0.1)',
-                  color: activeRace.gpsPct >= 80 ? '#52B788' : activeRace.gpsPct >= 40 ? '#E8B86D' : '#5A5550',
+                  color: activeRace.gpsPct >= 80 ? '#52B788' : activeRace.gpsPct >= 40 ? '#E8B86D' : '#8A847E',
                 }}>
                   {activeRace.gpsPct}% GPS Coverage
                 </span>
@@ -230,7 +244,7 @@ export default function Preview() {
                       {[['Speed', featured.paceAnalysis.frontRunners, styleColors['Front Runner']], ['Stalk', featured.paceAnalysis.stalkers, styleColors['Stalker']], ['Close', featured.paceAnalysis.closers, styleColors['Closer']]].map(([l, c, col]) => (
                         <div key={l} style={{ textAlign: 'center' }}>
                           <div style={{ fontFamily: 'var(--font-serif)', fontSize: 28, color: col }}>{c}</div>
-                          <div style={{ fontSize: 13, color: '#5A5550', marginTop: 2 }}>{l}</div>
+                          <div style={{ fontSize: 13, color: '#8A847E', marginTop: 2 }}>{l}</div>
                         </div>
                       ))}
                     </div>
@@ -250,7 +264,7 @@ export default function Preview() {
                     <div key={pick.name} style={{ borderLeft: '4px solid #C59757', paddingLeft: 26, marginBottom: 30 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
                         <span style={{ fontFamily: 'var(--font-serif)', fontSize: 26, fontWeight: 500, color: '#C59757' }}>{pick.name}</span>
-                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#5A5550' }}>{pick.odds}</span>
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{pick.odds}</span>
                       </div>
                       <div style={{ fontSize: 19, fontWeight: 500, color: '#D6D1CC', marginBottom: 8 }}>{pick.headline}</div>
                       <p style={{ fontSize: 17, color: '#8A847E', lineHeight: 1.7 }}>{pick.analysis}</p>
@@ -267,7 +281,7 @@ export default function Preview() {
                   Race Card
                 </h3>
                 {!featured && activeRace.gpsPct < 50 && (
-                  <span style={{ fontSize: 16, color: '#5A5550', fontStyle: 'italic' }}>Limited GPS data for this race</span>
+                  <span style={{ fontSize: 16, color: '#8A847E', fontStyle: 'italic' }}>Limited GPS data for this race</span>
                 )}
               </div>
 
@@ -281,7 +295,7 @@ export default function Preview() {
               {/* Horse rows */}
               {(featured ? [...featured.horses].sort((a, b) => a.post - b.post) : activeRace.horses.sort((a, b) => a.post - b.post)).map(horse => {
                 const hasGPS = featured ? horse.hasGPS : horse.hasGPS;
-                const color = featured && horse.style ? styleColors[horse.style] : '#5A5550';
+                const color = featured && horse.style ? styleColors[horse.style] : '#8A847E';
 
                 return (
                   <div key={horse.name}
@@ -297,7 +311,7 @@ export default function Preview() {
                     onMouseEnter={e => e.currentTarget.style.background = 'rgba(197,151,87,0.02)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                   >
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: '#5A5550' }}>{horse.post}</div>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: '#8A847E' }}>{horse.post}</div>
 
                     {/* Portrait thumbnail */}
                     <div style={{ width: 44, height: 44, borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(197,151,87,0.1)' }}>
@@ -318,7 +332,7 @@ export default function Preview() {
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: 15, color: '#5A5550' }}>
+                      <div style={{ fontSize: 15, color: '#8A847E' }}>
                         J: {horse.jockey} · T: {horse.trainer}
                       </div>
                     </div>
@@ -328,7 +342,7 @@ export default function Preview() {
                     <div>
                       {featured && horse.gpsScore != null ? (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 600, color: horse.gpsScore >= 85 ? '#C59757' : horse.gpsScore >= 70 ? '#D6D1CC' : '#5A5550' }}>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 20, fontWeight: 600, color: horse.gpsScore >= 85 ? '#C59757' : horse.gpsScore >= 70 ? '#D6D1CC' : '#8A847E' }}>
                             {horse.gpsScore}
                           </span>
                           {horse.speeds?.length > 0 && <MiniSparkline data={horse.speeds} color={color} />}
@@ -355,8 +369,8 @@ export default function Preview() {
                 ].map(item => (
                   <div key={item.label} className="card-flat" style={{ padding: 26 }}>
                     <div className="label" style={{ marginBottom: 10, fontSize: 12 }}>{item.label}</div>
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: '#C59757', marginBottom: 4 }}>{item.val?.name || '—'}</div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{item.val ? item.m(item.val) : '—'}</div>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: '#C59757', marginBottom: 4 }}>{item.val?.name || '–'}</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{item.val ? item.m(item.val) : '–'}</div>
                   </div>
                 ))}
               </div>
@@ -365,6 +379,8 @@ export default function Preview() {
 
           </motion.div>
         </AnimatePresence>
+      )}
+        </>
       )}
     </div>
   );

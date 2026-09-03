@@ -137,7 +137,7 @@ function JourneyMapInner({ races, horseName }) {
       totalRaces: sorted.filter(r => TRACK_COORDS[r.track?.trim()]).length,
       winCount: sorted.filter(r => r.position === 1 && TRACK_COORDS[r.track?.trim()]).length,
     };
-  }, [races, horseName]);
+  }, [races]);
 
   useEffect(() => {
     if (!mapContainer.current || locations.length === 0) return;
@@ -269,13 +269,13 @@ function JourneyMapInner({ races, horseName }) {
         const rows = raceList.map(r => {
           const isWin = r.position === 1;
           const fin = r.position
-            ? `<span style="color:${isWin ? GOLD : '#D6D1CC'};font-weight:600;font-size:14px">${esc(r.position)}</span><span style="color:#5A5550;font-size:14px">/${esc(r.fieldSize || '?')}</span>`
-            : '<span style="color:#5A5550;font-size:14px">—</span>';
+            ? `<span style="color:${isWin ? GOLD : '#D6D1CC'};font-weight:600;font-size:14px">${esc(r.position)}</span><span style="color:#8A847E;font-size:14px">/${esc(r.fieldSize || '?')}</span>`
+            : '<span style="color:#8A847E;font-size:14px">–</span>';
           return `<div style="display:flex;gap:14px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(197,151,87,0.05)">
-            <span style="font-family:monospace;font-size:12px;color:#5A5550;min-width:27px">#${esc(r.idx)}</span>
+            <span style="font-family:monospace;font-size:12px;color:#8A847E;min-width:27px">#${esc(r.idx)}</span>
             <span style="min-width:41px">${fin}</span>
             ${r.earnings ? `<span style="font-family:monospace;font-size:12px;color:${GOLD}">$${esc(r.earnings.toLocaleString())}</span>` : ''}
-            <span style="font-family:monospace;font-size:11px;color:#5A5550;margin-left:auto">${esc(r.date?.slice(5))}${r.hasGPS ? ' <span style="color:#52B788">GPS</span>' : ''}</span>
+            <span style="font-family:monospace;font-size:11px;color:#8A847E;margin-left:auto">${esc(r.date?.slice(5))}${r.hasGPS ? ' <span style="color:#52B788">GPS</span>' : ''}</span>
           </div>`;
         }).join('');
 
@@ -329,7 +329,7 @@ function JourneyMapInner({ races, horseName }) {
           ].map(s => (
             <div key={s.label} style={{ textAlign: 'center' }}>
               <div style={{ fontFamily: 'var(--font-serif)', fontSize: 36, fontWeight: 400, color: '#C59757' }}>{s.value}</div>
-              <div style={{ fontSize: 15, color: '#5A5550', fontWeight: 500, marginTop: 4 }}>{s.label}</div>
+              <div style={{ fontSize: 15, color: '#8A847E', fontWeight: 500, marginTop: 4 }}>{s.label}</div>
             </div>
           ))}
         </div>
@@ -349,7 +349,7 @@ function JourneyMapInner({ races, horseName }) {
             {l.label}
           </div>
         ))}
-        <div style={{ fontSize: 15, color: '#5A5550', marginLeft: 'auto', fontStyle: 'italic' }}>
+        <div style={{ fontSize: 15, color: '#8A847E', marginLeft: 'auto', fontStyle: 'italic' }}>
           Click a pin for race details
         </div>
       </div>
@@ -368,7 +368,7 @@ function JourneyMapInner({ races, horseName }) {
           border-bottom-color: #141A10 !important;
         }
         .journey-popup .mapboxgl-popup-close-button {
-          color: #5A5550 !important;
+          color: #8A847E !important;
           font-size: 18px !important;
           padding: 4px 8px !important;
         }

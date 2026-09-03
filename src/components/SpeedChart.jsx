@@ -34,7 +34,7 @@ export default function SpeedChart({ type = 'speed' }) {
             {type === 'speed' ? 'Speed Traces' : 'Stride Analysis'}
           </h3>
         </div>
-        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>
+        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#8A847E' }}>
           {type === 'speed' ? 'MPH' : 'Feet'}
         </span>
       </div>
@@ -44,8 +44,8 @@ export default function SpeedChart({ type = 'speed' }) {
           const on = activeHorses.includes(horse.name);
           return (
             <button key={horse.name} onClick={() => toggle(horse.name)}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 3, fontSize: 11, cursor: 'pointer', background: 'transparent', color: on ? '#D6D1CC' : '#5A5550', border: 'none', transition: 'opacity 300ms', opacity: on ? 1 : 0.5 }}>
-              <div style={{ width: 6, height: 6, borderRadius: '50%', background: on ? horse.color : '#5A5550' }} />
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 3, fontSize: 11, cursor: 'pointer', background: 'transparent', color: on ? '#D6D1CC' : '#8A847E', border: 'none', transition: 'opacity 300ms', opacity: on ? 1 : 0.5 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: on ? horse.color : '#8A847E' }} />
               {horse.name.length > 14 ? horse.name.substring(0, 14) + '…' : horse.name}
             </button>
           );
@@ -63,8 +63,8 @@ export default function SpeedChart({ type = 'speed' }) {
             ))}
           </defs>
           <CartesianGrid stroke="rgba(197,151,87,0.03)" strokeDasharray="3 3" />
-          <XAxis dataKey="gate" tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
-          <YAxis tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} domain={type === 'speed' ? [30, 40] : [21, 25]} />
+          <XAxis dataKey="gate" tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} domain={type === 'speed' ? [30, 40] : [21, 25]} />
           <Tooltip content={<CustomTooltip />} />
           {featuredRace.horses.map(h => activeHorses.includes(h.name) ? (
             <Area key={h.name} type="monotone" dataKey={h.name} stroke={h.color} strokeWidth={1.5}
