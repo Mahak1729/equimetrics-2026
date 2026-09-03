@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from 'eslint/config'
 export default defineConfig([
   globalIgnores(['dist']),
   {
-    files: ['**/*.{js,jsx}'],
+    files: ['**/*.{js,mjs,jsx}'],
     extends: [
       js.configs.recommended,
       reactHooks.configs.flat.recommended,
@@ -28,7 +28,7 @@ export default defineConfig([
   },
   {
     // Server-side code: the API routes and the Vite config run under Node.
-    files: ['api/**/*.js', 'vite.config.js'],
+    files: ['server/**/*.js', 'netlify/**/*.mjs', 'vite.config.js'],
     languageOptions: {
       globals: globals.node,
     },

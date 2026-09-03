@@ -8,7 +8,7 @@ position at every gate. On top of that sits **HorseLLM**, a chat assistant that 
 questions about horses and upcoming races using the same dataset.
 
 Built with React 19, Vite, Tailwind CSS, Recharts, Mapbox GL and the Anthropic API,
-deployed on Vercel.
+deployed on Netlify.
 
 ## Features
 
@@ -33,7 +33,8 @@ npm run dev
 
 The dev server runs at http://localhost:5173. The API routes under `/api` are served in
 development by a Vite middleware plugin in `vite.config.js`, so the same URLs work
-locally and in production without running `vercel dev`.
+locally and in production. You do not need the Netlify CLI for day-to-day work, but
+`npx netlify dev` (port 8888) runs the real functions if you want to test those.
 
 ### Scripts
 
@@ -50,27 +51,29 @@ Copy `.env.example` to `.env` and fill it in. `.env` is gitignored.
 
 | Variable | Required | Used by | Notes |
 | --- | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | Yes, for chat | `/api/chat` (server only) | From the [Anthropic Console](https://console.anthropic.com/settings/keys). Never exposed to the browser. |
-| `VITE_MAPBOX_TOKEN` | Yes, for the map | `JourneyMap` (client) | A public Mapbox token. The `VITE_` prefix means it *is* bundled into the client, so use a token restricted by URL. |
-| `ALLOWED_ORIGINS` | No | `/api/chat` (server only) | Comma-separated extra origins allowed to call the chat endpoint, on top of the built-in list. |
+| `ANTHROPIC_API_KEY` | Yes, for chat | `/api/chat` (function only) | From the [Anthropic Console](https://console.anthropic.com/settings/keys). Never exposed to the browser. On Netlify, scope it to **Functions**. |
+| `VITE_MAPBOX_TOKEN` | Yes, for the map | `JourneyMap` (client) | A public Mapbox token. The `VITE_` prefix means it *is* bundled into the client, so use a token restricted by URL. On Netlify, scope it to **Builds**. |
+| `ALLOWED_ORIGINS` | No | `/api/chat` (function only) | Comma-separated extra origins allowed to call the chat endpoint, on top of the built-in list. |
 
-Everything else the app needs is committed under `api/_data/`, so there is no database
+Everything else the app needs is committed under `server/data/`, so there is no database
 to provision.
 
 ## API routes
 
-Two routes ship as Vercel functions in `api/`:
+Two routes ship as Netlify Functions in `netlify/functions/`, and `netlify.toml`
+rewrites the public `/api` paths onto them:
 
-| Route | Method | Returns |
-| --- | --- | --- |
-| `/api/chat` | POST | HorseLLM reply |
-| `/api/horses/:name` | GET | One horse profile |
+| Route | Method | Function | Returns |
+| --- | --- | --- | --- |
+| `/api/chat` | POST | `chat.mjs` | HorseLLM reply |
+| `/api/horses/:name` | GET | `horse.mjs` | One horse profile |
 
 The dev middleware in `vite.config.js` also serves `/api/races`, `/api/replays`,
 `/api/forecast`, `/api/horses` and `/api/gps-races`. Those have no deployed counterpart
 and nothing in the app calls them today: the pages fetch static JSON from
 `public/data/` instead. If you start calling one of them from the client, add a matching
-function under `api/` first, or it will 404 in production.
+function under `netlify/functions/` and a redirect in `netlify.toml` first, or it will
+fall through to the SPA fallback and return `index.html`.
 
 ## How the chat endpoint works
 
@@ -84,17 +87,20 @@ function under `api/` first, or it will 404 in production.
 { "content": "...", "model": "claude-sonnet-5" }
 ```
 
-What happens in between, in `api/chat.js`:
+The function in `netlify/functions/chat.mjs` handles the HTTP layer, and everything
+else lives in the platform-neutral `server/chat.js`, which the Vite dev middleware shares:
 
-1. **Origin check.** In production the request must come from an allowed origin:
-   `localhost`, any `*.vercel.app` deployment, `https://equimetrics2026.mahakmkumawat.com`,
-   or anything listed in `ALLOWED_ORIGINS`. Everything else gets a 403.
-2. **Rate limit.** 15 requests per IP per minute, in memory. This is per serverless
+1. **Origin check.** The request must come from an allowed origin: `localhost`, any
+   `*.netlify.app` deployment, `https://equimetrics2026.mahakmkumawat.com`, or anything
+   listed in `ALLOWED_ORIGINS`. Everything else gets a 403. The check is skipped only
+   under `netlify dev`.
+2. **Rate limit.** 15 requests per IP per minute, in memory. This is per function
    instance, so treat it as a speed bump rather than a hard guarantee.
 3. **Validation.** At most 20 messages, roles limited to `user` and `assistant`, and
    5,000 characters per message.
-4. **Retrieval.** `buildContext.js` pulls the horses and races mentioned in the latest
-   user message out of the local dataset.
+4. **Retrieval.** `server/data/buildContext.js` pulls the horses and races mentioned in
+   the latest user message out of the dataset. The JSON is imported statically so the
+   function bundler inlines it; nothing is read from disk at runtime.
 5. **The model call.** The official `@anthropic-ai/sdk` calls `claude-sonnet-5` with
    adaptive thinking at `low` effort, which keeps replies quick and cheap while still
    letting the model reason when a question needs it.
@@ -109,45 +115,56 @@ second is the per-question retrieved context, which sits *after* the cache break
 it never invalidates the cached prefix. Caching is a prefix match, so the ordering
 matters: repeat questions reuse the cached briefing instead of paying for it again.
 
-Because the chat key is only ever read server-side, it is safe in Vercel's environment
-variables and never reaches the browser.
+Because the chat key is only ever read inside the function, it is safe in Netlify's
+environment variables and never reaches the browser.
 
 ## Deployment
 
-The project deploys to Vercel as a static Vite build plus Node functions under `api/`.
-Routing and security headers are in `vercel.json`.
+The project deploys to Netlify as a static Vite build plus two Netlify Functions.
+Build settings, `/api` redirects, the SPA fallback and the security headers all live in
+`netlify.toml`, so the Netlify UI needs almost nothing.
 
-1. Import the repository into Vercel. The framework preset is Vite; build command
-   `npm run build`, output directory `dist`.
-2. Add `ANTHROPIC_API_KEY` and `VITE_MAPBOX_TOKEN` under **Settings → Environment
-   Variables**, for Production and Preview. Add `ALLOWED_ORIGINS` only if you need to
-   allow an origin beyond the defaults.
-3. Redeploy after changing any environment variable — `VITE_`-prefixed values are baked
-   in at build time, so an existing deployment will not pick them up.
+1. In Netlify choose **Add new site → Import an existing project**, connect GitHub and
+   pick this repository. Netlify reads `netlify.toml`, so the build command
+   (`npm run build`), publish directory (`dist`) and functions directory are prefilled.
+   Leave them as they are and deploy.
+2. Open **Site configuration → Environment variables** and add:
+   - `ANTHROPIC_API_KEY`, scoped to **Functions**
+   - `VITE_MAPBOX_TOKEN`, scoped to **Builds**
+   - `ALLOWED_ORIGINS`, scoped to Functions, only if you need an origin beyond the defaults
+3. Trigger a redeploy from **Deploys → Trigger deploy → Deploy site**. Environment
+   variables only take effect on deploys that happen after they are set, and
+   `VITE_`-prefixed values are compiled into the client bundle at build time.
+
+The first deploy is a good moment to open HorseLLM and ask one question. If it answers,
+the function, the key and the redirects are all wired up.
 
 ### Custom domain
 
 Production runs at **https://equimetrics2026.mahakmkumawat.com**.
 
-To point a domain at your own deployment, add it under **Settings → Domains** in Vercel
-and create the DNS record Vercel shows you (a `CNAME` to `cname.vercel-dns.com` for a
-subdomain). The domain is already in the `/api/chat` origin allowlist; any other domain
-needs to go into `ALLOWED_ORIGINS` or the chat endpoint will answer 403 while the rest
-of the site works fine.
+To attach it, go to **Domain management → Add a domain**, enter the subdomain, and
+create the DNS record Netlify shows you (a `CNAME` pointing at your
+`<site-name>.netlify.app` address). Netlify provisions the TLS certificate automatically
+once DNS resolves. The domain is already in the `/api/chat` origin allowlist; any other
+domain needs to go into `ALLOWED_ORIGINS` or the chat endpoint will answer 403 while the
+rest of the site works fine.
 
 ## Project layout
 
 ```
-api/            Vercel serverless functions
-  _data/        Dataset and the retrieval/system-prompt builder
-  chat.js       HorseLLM endpoint
+netlify/
+  functions/    Netlify Functions: chat.mjs and horse.mjs (the HTTP layer only)
+server/
+  chat.js       Platform-neutral chat logic shared by the function and the dev server
+  data/         Dataset and the retrieval/system-prompt builder
 public/
   data/         Static JSON the pages fetch at runtime
 src/
   components/   Charts, maps, replay, shared UI
   pages/        One file per route
+netlify.toml    Build settings, /api redirects, SPA fallback, security headers
 vite.config.js  Vite config plus the dev-time /api middleware
-vercel.json     Rewrites and security headers
 ```
 
 ## Credits

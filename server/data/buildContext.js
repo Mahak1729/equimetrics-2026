@@ -1,8 +1,8 @@
-// Builds a compact context string from our data for the LLM
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-const allProfiles = require('./horseProfiles.json');
-const allRaces = require('./allRaces.json');
+// Builds a compact context string from our data for the LLM.
+// Static JSON imports so the function bundler inlines the data instead of
+// relying on files being present next to the bundle at runtime.
+import allProfiles from './horseProfiles.json' with { type: 'json' };
+import allRaces from './allRaces.json' with { type: 'json' };
 import { forecastRaces } from './forecastData.js';
 
 const TRACK_NAMES = {

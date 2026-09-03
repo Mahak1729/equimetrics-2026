@@ -1,22 +1,24 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { buildSystemPrompt, findRelevantHorses, findRelevantRaces } from './_data/buildContext.js';
-
-const rateLimit = {};
-const RATE_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS = 15;
+// Platform-neutral core of the HorseLLM chat endpoint. The Netlify function in
+// netlify/functions/chat.mjs and the Vite dev middleware both call into this.
+import { buildSystemPrompt, findRelevantHorses, findRelevantRaces } from './data/buildContext.js';
 
 export const MODEL = 'claude-sonnet-5';
 export const MAX_TOKENS = 2048;
+
+const RATE_WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS = 15;
+const rateLimit = {};
 
 const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:3000',
+  'http://localhost:8888',
   'https://equimetrics2026.mahakmkumawat.com',
 ];
 
-// ALLOWED_ORIGINS is a comma-separated list of extra origins (e.g. a preview
-// domain) that should be accepted alongside the defaults above.
+// ALLOWED_ORIGINS is a comma-separated list of extra origins (e.g. a second
+// custom domain) that should be accepted alongside the defaults above.
 export function allowedOrigins(env = process.env) {
   const extra = (env.ALLOWED_ORIGINS || '')
     .split(',')
@@ -31,11 +33,14 @@ export function isAllowedOrigin(origin, env = process.env) {
   if (list.includes(origin)) return true;
   // Accept the exact origin as well as a referer, which carries a path.
   if (list.some(o => origin.startsWith(o + '/'))) return true;
-  if (/^https:\/\/[^/]+\.vercel\.app(\/|$)/.test(origin)) return true;
+  // Netlify production and deploy-preview URLs.
+  if (/^https:\/\/[^/]+\.netlify\.app(\/|$)/.test(origin)) return true;
   return false;
 }
 
-function isRateLimited(ip) {
+// Fixed-window limiter, in memory. Per function instance, so treat it as a
+// speed bump rather than a hard guarantee.
+export function isRateLimited(ip) {
   const now = Date.now();
   if (!rateLimit[ip] || now - rateLimit[ip].start > RATE_WINDOW_MS) {
     rateLimit[ip] = { start: now, count: 1 };
@@ -97,42 +102,4 @@ export async function requestCompletion(client, messages) {
     messages: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
   });
   return { content: extractText(response), model: response.model };
-}
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  // Origin check
-  const origin = req.headers.origin || req.headers.referer || '';
-  if (process.env.NODE_ENV === 'production' && !isAllowedOrigin(origin)) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-
-  const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-  if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
-  }
-
-  const { messages } = req.body || {};
-  const invalid = validateMessages(messages);
-  if (invalid) return res.status(400).json({ error: invalid });
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({ error: 'Chat is not configured' });
-  }
-
-  try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    res.status(200).json(await requestCompletion(client, messages));
-  } catch (err) {
-    if (err instanceof Anthropic.RateLimitError) {
-      return res.status(429).json({ error: 'Too many requests. Please wait a moment.' });
-    }
-    if (err instanceof Anthropic.APIError) {
-      return res.status(502).json({ error: 'Upstream request failed' });
-    }
-    res.status(500).json({ error: 'Internal server error' });
-  }
 }
