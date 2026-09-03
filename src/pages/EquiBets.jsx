@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Users, Trophy, TrendingUp, ChevronRight, Check, Crown, Flame, Target, Zap, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { getPortrait } from '../data/portraits';
+import { useJSON } from '../hooks/useJSON';
+import { SkeletonList, SkeletonCards, Skeleton, LoadError } from '../components/Loading';
 
 // ── Hay currency icon ──
 const Hay = ({ size = 16, style = {} }) => (
@@ -33,7 +35,7 @@ function buildMarkets(forecastRaces) {
       id: `${race.id}-winner`,
       type: 'winner',
       category: 'RACE WINNER',
-      title: `${race.trackName} R${race.raceNumber} — Who wins?`,
+      title: `${race.trackName} R${race.raceNumber}: Who wins?`,
       subtitle: `${race.date} · ${race.distance} ${race.surface} · ${race.purse}`,
       icon: '🏆',
       volume: Math.floor(Math.random() * 40000 + 15000),
@@ -295,8 +297,7 @@ export default function EquiBets() {
   const [category, setCategory] = useState('All');
   const [betModal, setBetModal] = useState(null);
   const [toast, setToast] = useState(null);
-  const [forecastRaces, setForecastRaces] = useState([]);
-  useEffect(() => { fetch('/data/forecast.json').then(r => r.json()).then(setForecastRaces); }, []);
+  const { data: forecastRaces, loading, error, retry } = useJSON('/data/forecast.json', []);
 
   const allMarkets = useMemo(() => buildMarkets(forecastRaces), [forecastRaces]);
 
@@ -336,6 +337,15 @@ export default function EquiBets() {
         </div>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the prediction markets." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={44} width={340} radius={6} style={{ marginBottom: 36 }} />
+          <SkeletonList rows={5} height={110} />
+        </div>
+      ) : (
+        <>
       {/* Tabs */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ display: 'flex', gap: 6, marginBottom: 36 }}>
         {[
@@ -474,7 +484,7 @@ export default function EquiBets() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 17, color: '#E8B86D' }}>
                           <Flame style={{ width: 14, height: 14 }} /> {u.streak}
                         </div>
-                      ) : <span style={{ fontSize: 17, color: '#5A5550' }}>—</span>}
+                      ) : <span style={{ fontSize: 17, color: '#5A5550' }}>–</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 17, fontFamily: 'var(--font-mono)' }}>
                       {change > 0 ? (
@@ -617,6 +627,8 @@ export default function EquiBets() {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

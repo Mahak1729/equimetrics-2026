@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { styleColors, scenarioColors } from '../data/forecastConstants';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import { useJSON } from '../hooks/useJSON';
+import { SkeletonList, SkeletonCards, Skeleton, LoadError } from '../components/Loading';
 import { getPortrait } from '../data/portraits';
 
 // Track full names
@@ -44,12 +46,13 @@ function MiniSparkline({ data, color, width = 72, height = 24 }) {
 }
 
 export default function Preview() {
-  const [allRacesRaw, setAllRacesRaw] = useState([]);
-  const [forecastRaces, setForecastRaces] = useState([]);
-  useEffect(() => {
-    fetch('/data/races.json').then(r => r.json()).then(setAllRacesRaw);
-    fetch('/data/forecast.json').then(r => r.json()).then(setForecastRaces);
-  }, []);
+  const races = useJSON('/data/races.json', []);
+  const forecast = useJSON('/data/forecast.json', []);
+  const allRacesRaw = races.data;
+  const forecastRaces = forecast.data;
+  const loading = races.loading || forecast.loading;
+  const error = races.error || forecast.error;
+  const retry = () => { races.retry(); forecast.retry(); };
 
   // Get unique dates and tracks
   const dates = useMemo(() => [...new Set(allRacesRaw.map(r => r.date))].sort(), [allRacesRaw]);
@@ -106,6 +109,16 @@ export default function Preview() {
         </p>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the race card." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={18} width={110} style={{ marginBottom: 14 }} />
+          <Skeleton height={52} width="100%" style={{ marginBottom: 28 }} />
+          <SkeletonList rows={4} height={96} />
+        </div>
+      ) : (
+        <>
       {/* ── DATE SELECTOR ── */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ marginBottom: 32 }}>
         <div className="label" style={{ marginBottom: 14, fontSize: 15 }}>Race Day</div>
@@ -355,8 +368,8 @@ export default function Preview() {
                 ].map(item => (
                   <div key={item.label} className="card-flat" style={{ padding: 26 }}>
                     <div className="label" style={{ marginBottom: 10, fontSize: 12 }}>{item.label}</div>
-                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: '#C59757', marginBottom: 4 }}>{item.val?.name || '—'}</div>
-                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{item.val ? item.m(item.val) : '—'}</div>
+                    <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: '#C59757', marginBottom: 4 }}>{item.val?.name || '–'}</div>
+                    <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{item.val ? item.m(item.val) : '–'}</div>
                   </div>
                 ))}
               </div>
@@ -365,6 +378,8 @@ export default function Preview() {
 
           </motion.div>
         </AnimatePresence>
+      )}
+        </>
       )}
     </div>
   );

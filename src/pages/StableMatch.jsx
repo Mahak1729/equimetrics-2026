@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Heart, X, RotateCcw, ChevronRight, SlidersHorizontal, Trophy, Zap, TrendingUp } from 'lucide-react';
 import { styleColors } from '../data/forecastConstants';
+import { useJSON } from '../hooks/useJSON';
+import { SkeletonList, SkeletonCards, Skeleton, LoadError } from '../components/Loading';
 import { getPortrait } from '../data/portraits';
 
 const STYLE_OPTIONS = ['Any', 'Front Runner', 'Stalker', 'Closer'];
@@ -64,7 +66,7 @@ function SwipeCard({ horse, onSwipe, isTop, exitDirection }) {
         boxShadow: '0 8px 40px rgba(0,0,0,0.4)',
         display: 'flex', flexDirection: 'row',
       }}>
-        {/* Horse image — left half */}
+        {/* Horse image: left half */}
         <div style={{ position: 'relative', flex: '0 0 50%', overflow: 'hidden' }}>
           <img
             src={getPortrait(horse.name)}
@@ -100,7 +102,7 @@ function SwipeCard({ horse, onSwipe, isTop, exitDirection }) {
           )}
         </div>
 
-        {/* Data — right half */}
+        {/* Data: right half */}
         <div style={{ flex: '1 1 50%', padding: '24px 26px', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
           {/* Header: name, badges, odds */}
           <div style={{ marginBottom: 20 }}>
@@ -141,9 +143,9 @@ function SwipeCard({ horse, onSwipe, isTop, exitDirection }) {
           {/* Top stats row */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
             {[
-              { icon: Zap, label: 'Peak Speed', value: horse.peakMPH ? `${horse.peakMPH} mph` : '—', highlight: horse.peakMPH >= 39 },
-              { icon: TrendingUp, label: 'Stride Est.', value: strideLen ? `${strideLen} ft` : '—', highlight: strideLen >= 24 },
-              { icon: Trophy, label: 'GPS Score', value: horse.gpsScore != null ? `${horse.gpsScore}` : '—', highlight: horse.gpsScore >= 80 },
+              { icon: Zap, label: 'Peak Speed', value: horse.peakMPH ? `${horse.peakMPH} mph` : '–', highlight: horse.peakMPH >= 39 },
+              { icon: TrendingUp, label: 'Stride Est.', value: strideLen ? `${strideLen} ft` : '–', highlight: strideLen >= 24 },
+              { icon: Trophy, label: 'GPS Score', value: horse.gpsScore != null ? `${horse.gpsScore}` : '–', highlight: horse.gpsScore >= 80 },
             ].map(stat => (
               <div key={stat.label} style={{ textAlign: 'center' }}>
                 <stat.icon style={{ width: 16, height: 16, color: stat.highlight ? '#C59757' : '#5A5550', margin: '0 auto 5px' }} />
@@ -163,9 +165,9 @@ function SwipeCard({ horse, onSwipe, isTop, exitDirection }) {
           {/* Secondary metrics */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 }}>
             {[
-              { label: 'Closing', value: horse.closingMPH ? `${horse.closingMPH} mph` : '—' },
-              { label: 'Stride Fade', value: horse.strideFade != null ? `${horse.strideFade}%` : '—' },
-              { label: 'Efficiency', value: horse.efficiency ? `${horse.efficiency}%` : '—' },
+              { label: 'Closing', value: horse.closingMPH ? `${horse.closingMPH} mph` : '–' },
+              { label: 'Stride Fade', value: horse.strideFade != null ? `${horse.strideFade}%` : '–' },
+              { label: 'Efficiency', value: horse.efficiency ? `${horse.efficiency}%` : '–' },
             ].map(s => (
               <div key={s.label} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
@@ -299,7 +301,7 @@ function PreferencesScreen({ onStart }) {
 
       <div style={{ marginBottom: 38, padding: '20px 24px', borderRadius: 4, background: 'rgba(232,184,109,0.06)', border: '1px solid rgba(232,184,109,0.12)' }}>
         <p style={{ fontSize: 18, color: '#E8B86D', fontWeight: 600, lineHeight: 1.7, margin: 0 }}>
-          Fun fact: A horse's left heart ventricle size is one of the strongest predictors of racing success — bigger chamber, more blood per beat, more speed when it counts.
+          Fun fact: A horse's left heart ventricle size is one of the strongest predictors of racing success. Bigger chamber, more blood per beat, more speed when it counts.
         </p>
       </div>
 
@@ -425,8 +427,7 @@ export default function StableMatch() {
   const [passed, setPassed] = useState([]);
   const [horses, setHorses] = useState([]);
   const [lastSwipe, setLastSwipe] = useState(null);
-  const [forecastRaces, setForecastRaces] = useState([]);
-  useEffect(() => { fetch('/data/forecast.json').then(r => r.json()).then(setForecastRaces); }, []);
+  const { data: forecastRaces, loading, error, retry } = useJSON('/data/forecast.json', []);
 
   const buildDeck = (preferences) => {
     const allHorses = [];
@@ -514,6 +515,12 @@ export default function StableMatch() {
         )}
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the upcoming races." onRetry={retry} />
+      ) : loading ? (
+        <SkeletonCards count={4} height={180} minWidth={240} />
+      ) : (
+        <>
       <AnimatePresence mode="wait">
         {phase === 'prefs' && (
           <PreferencesScreen key="prefs" onStart={handleStart} />
@@ -610,6 +617,8 @@ export default function StableMatch() {
           <MatchesScreen key="results" matches={matches} onReset={handleReset} />
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

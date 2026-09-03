@@ -73,7 +73,7 @@ export default function Home() {
             Six tools that transform GPS telemetry into insight
           </h2>
           <p style={{ fontSize: 20, color: '#8A847E', maxWidth: 660, lineHeight: 1.7, marginTop: 22 }}>
-            We analyze all 52,000+ race starts across 71 tracks — and for the 32 GPS-equipped tracks, we unlock speed, stride, and ground loss data that traditional methods simply cannot capture.
+            We analyze all 52,000+ race starts across 71 tracks, and for the 32 GPS-equipped tracks we unlock speed, stride, and ground loss data that traditional methods simply cannot capture.
           </p>
         </motion.div>
 
@@ -83,8 +83,8 @@ export default function Home() {
             { label: 'Analysis', title: 'Deep Dive', desc: 'Speed traces, stride patterns, and ground loss metrics. See what chart callers with binoculars physically cannot observe.', to: '/deep-dive' },
             { label: 'Profiling', title: 'Horse Profiles', desc: 'Running style classification, stride signatures, and performance radar charts built from each horse\'s GPS history.', to: '/horse-profiles' },
             { label: 'Prediction', title: 'Forecast', desc: 'AI-powered pace projections and value picks for upcoming races based on GPS-derived running styles and patterns.', to: '/forecast' },
-            { label: 'AI Assistant', title: 'HorseLLM', desc: 'Your sharpest friend at the track — ask anything about horses, races, or GPS data and get instant, data-backed answers powered by 12,919 profiles.', to: '/horsellm' },
-            { label: 'Matchmaking', title: 'StableMatch', desc: 'Swipe through upcoming horses like a dating app. Set your style, odds, and GPS preferences — then build a betting stable tailored to you.', to: '/stable-match' },
+            { label: 'AI Assistant', title: 'HorseLLM', desc: 'Your sharpest friend at the track. Ask anything about horses, races, or GPS data and get instant, data-backed answers powered by 12,919 profiles.', to: '/horsellm' },
+            { label: 'Matchmaking', title: 'StableMatch', desc: 'Swipe through upcoming horses like a dating app. Set your style, odds, and GPS preferences, then build a betting stable tailored to you.', to: '/stable-match' },
           ].map((f, i) => (
             <motion.div key={f.title} {...fadeUp} transition={{ delay: i * 0.08, duration: 0.5 }}>
               <Link to={f.to} className="card" style={{ display: 'block', padding: 44, textDecoration: 'none', height: '100%' }}>
@@ -124,7 +124,7 @@ export default function Home() {
             Ready to see racing differently?
           </h2>
           <p style={{ fontSize: 20, color: '#8A847E', marginBottom: 60, maxWidth: 520, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
-            Dive into a featured race with full GPS telemetry — speed, stride, ground loss, and more.
+            Dive into a featured race with full GPS telemetry: speed, stride, ground loss, and more.
           </p>
           <Link to="/live-replay" className="btn-primary" style={{ fontSize: 17, padding: '17px 34px' }}>
             Launch Live Replay <ArrowRight style={{ width: 18, height: 18 }} />

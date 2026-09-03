@@ -270,7 +270,7 @@ function JourneyMapInner({ races, horseName }) {
           const isWin = r.position === 1;
           const fin = r.position
             ? `<span style="color:${isWin ? GOLD : '#D6D1CC'};font-weight:600;font-size:14px">${esc(r.position)}</span><span style="color:#5A5550;font-size:14px">/${esc(r.fieldSize || '?')}</span>`
-            : '<span style="color:#5A5550;font-size:14px">—</span>';
+            : '<span style="color:#5A5550;font-size:14px">–</span>';
           return `<div style="display:flex;gap:14px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(197,151,87,0.05)">
             <span style="font-family:monospace;font-size:12px;color:#5A5550;min-width:27px">#${esc(r.idx)}</span>
             <span style="min-width:41px">${fin}</span>

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SkeletonList, SkeletonCards, Skeleton, LoadError } from '../components/Loading';
 import {
   AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis,
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar,
@@ -58,7 +59,7 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
           <div style={{ fontSize: 16, color: '#5A5550', marginTop: 4 }}>{race.date} · {race.raceType}</div>
         </div>
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: posColor }}>
-          {race.position || '—'}<span style={{ fontSize: 17, color: '#5A5550' }}>/{race.fieldSize || '?'}</span>
+          {race.position || '–'}<span style={{ fontSize: 17, color: '#5A5550' }}>/{race.fieldSize || '?'}</span>
         </div>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 19, color: '#C59757' }}>
           ${race.earnings?.toLocaleString() || '0'}
@@ -66,7 +67,7 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
         <div>
           {race.positions?.length > 0 ? (
             <div style={{ width: 90, height: 34 }}><PositionFlow positions={race.positions} color={color} height={34} /></div>
-          ) : <span style={{ fontSize: 17, color: '#5A5550' }}>—</span>}
+          ) : <span style={{ fontSize: 17, color: '#5A5550' }}>–</span>}
         </div>
         <div style={{ color: '#5A5550', display: 'flex', justifyContent: 'center' }}>
           {isExpanded ? <ChevronUp style={{ width: 18, height: 18 }} /> : <ChevronDown style={{ width: 18, height: 18 }} />}
@@ -106,18 +107,18 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
                             <Bar dataKey="v" radius={[2, 2, 0, 0]}>{race.strideLengths.map((_, i) => <Cell key={i} fill={`${color}${i >= race.strideLengths.length - 2 ? '80' : '30'}`} />)}</Bar>
                           </BarChart>
                         </ResponsiveContainer>
-                      ) : <span style={{ fontSize: 17, color: '#5A5550' }}>—</span>}
+                      ) : <span style={{ fontSize: 17, color: '#5A5550' }}>–</span>}
                     </div>
                   </div>
                 </div>
               ) : (
                 <div style={{ paddingTop: 20, borderTop: '1px solid rgba(197,151,87,0.04)', fontSize: 18, color: '#8A847E' }}>
-                  Traditional data only — no GPS telemetry available for this race.
+                  Traditional data only. No GPS telemetry available for this race.
                 </div>
               )}
               {race.hasGPS && (
                 <div style={{ display: 'flex', gap: 28, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(197,151,87,0.04)', flexWrap: 'wrap' }}>
-                  {[['Peak', race.peakMPH ? `${race.peakMPH} mph` : '—'], ['Closing', race.closingMPH ? `${race.closingMPH} mph` : '—'], ['Ground Loss', race.groundLoss != null ? `+${race.groundLoss}m` : '—'], ['Purse', `$${race.purse?.toLocaleString()}`]].map(([l, v]) => (
+                  {[['Peak', race.peakMPH ? `${race.peakMPH} mph` : '–'], ['Closing', race.closingMPH ? `${race.closingMPH} mph` : '–'], ['Ground Loss', race.groundLoss != null ? `+${race.groundLoss}m` : '–'], ['Purse', `$${race.purse?.toLocaleString()}`]].map(([l, v]) => (
                     <div key={l}><div style={{ fontSize: 16, color: '#5A5550', textTransform: 'uppercase', letterSpacing: '1px' }}>{l}</div><div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, color: '#D6D1CC', marginTop: 5 }}>{v}</div></div>
                   ))}
                 </div>
@@ -141,16 +142,27 @@ export default function Profiles() {
   const [h, setH] = useState(null);
   const [totalCount, setTotalCount] = useState(12919);
 
-  // Fetch static horse index once — enables instant local search
+  // Fetch static horse index once, which enables instant local search
   const [profileList, setProfileList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const retry = () => setReloadKey(k => k + 1);
+
   useEffect(() => {
-    fetch('/data/horse-index.json').then(r => r.json()).then(d => {
-      const list = Object.values(d).sort((a, b) => (b.gpsScore || 0) - (a.gpsScore || 0));
-      setProfileList(list);
-      setTotalCount(list.length);
-      setTopHorsesList(list.filter(p => p.numRaces >= 2).slice(0, 16));
-    });
-  }, []);
+    setLoading(true);
+    setError(null);
+    fetch('/data/horse-index.json')
+      .then(r => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
+      .then(d => {
+        const list = Object.values(d).sort((a, b) => (b.gpsScore || 0) - (a.gpsScore || 0));
+        setProfileList(list);
+        setTotalCount(list.length);
+        setTopHorsesList(list.filter(p => p.numRaces >= 2).slice(0, 16));
+        setLoading(false);
+      })
+      .catch(err => { setError(err); setLoading(false); });
+  }, [reloadKey]);
 
   // Instant in-memory search (no network roundtrip)
   useEffect(() => {
@@ -207,11 +219,11 @@ export default function Profiles() {
   // `trait` gives a plain-English interpretation (better/worse X).
   const horseWinRate = h?.numRaces ? (h.wins / h.numRaces) : 0;
   const radarDimensions = h && h.hasGPS && baseline ? [
-    { label: 'Peak Speed',       value: h.bestPeak ? `${h.bestPeak.toFixed(1)} mph` : '—',      avg: `${baseline.bestPeak.toFixed(1)} mph`,       delta: (h.bestPeak || 0) - baseline.bestPeak,               neutralIf: 0.3, lowerBetter: false, trait: 'top-end speed' },
-    { label: 'Closing Velocity', value: h.avgClosing ? `${h.avgClosing.toFixed(1)} mph` : '—',  avg: `${baseline.avgClosing.toFixed(1)} mph`,     delta: (h.avgClosing || 0) - baseline.avgClosing,           neutralIf: 0.3, lowerBetter: false, trait: 'late kick' },
-    { label: 'Stride Fade',      value: h.strideFade != null ? `${h.strideFade.toFixed(1)}%` : '—', avg: `${baseline.strideFade.toFixed(1)}%`,    delta: (h.strideFade ?? baseline.strideFade) - baseline.strideFade, neutralIf: 0.5, lowerBetter: false, trait: 'stamina' },
-    { label: 'Ground Loss',      value: h.avgGroundLoss != null ? `${h.avgGroundLoss.toFixed(1)} m` : '—', avg: `${baseline.avgGroundLoss.toFixed(1)} m`, delta: (h.avgGroundLoss ?? baseline.avgGroundLoss) - baseline.avgGroundLoss, neutralIf: 0.5, lowerBetter: true,  trait: 'path efficiency' },
-    { label: 'Win Rate',         value: `${(horseWinRate * 100).toFixed(0)}% (${h.record || '—'})`, avg: `${(baseline.winRate * 100).toFixed(0)}%`, delta: horseWinRate - baseline.winRate,                      neutralIf: 0.01, lowerBetter: false, trait: 'win frequency' },
+    { label: 'Peak Speed',       value: h.bestPeak ? `${h.bestPeak.toFixed(1)} mph` : '–',      avg: `${baseline.bestPeak.toFixed(1)} mph`,       delta: (h.bestPeak || 0) - baseline.bestPeak,               neutralIf: 0.3, lowerBetter: false, trait: 'top-end speed' },
+    { label: 'Closing Velocity', value: h.avgClosing ? `${h.avgClosing.toFixed(1)} mph` : '–',  avg: `${baseline.avgClosing.toFixed(1)} mph`,     delta: (h.avgClosing || 0) - baseline.avgClosing,           neutralIf: 0.3, lowerBetter: false, trait: 'late kick' },
+    { label: 'Stride Fade',      value: h.strideFade != null ? `${h.strideFade.toFixed(1)}%` : '–', avg: `${baseline.strideFade.toFixed(1)}%`,    delta: (h.strideFade ?? baseline.strideFade) - baseline.strideFade, neutralIf: 0.5, lowerBetter: false, trait: 'stamina' },
+    { label: 'Ground Loss',      value: h.avgGroundLoss != null ? `${h.avgGroundLoss.toFixed(1)} m` : '–', avg: `${baseline.avgGroundLoss.toFixed(1)} m`, delta: (h.avgGroundLoss ?? baseline.avgGroundLoss) - baseline.avgGroundLoss, neutralIf: 0.5, lowerBetter: true,  trait: 'path efficiency' },
+    { label: 'Win Rate',         value: `${(horseWinRate * 100).toFixed(0)}% (${h.record || '–'})`, avg: `${(baseline.winRate * 100).toFixed(0)}%`, delta: horseWinRate - baseline.winRate,                      neutralIf: 0.01, lowerBetter: false, trait: 'win frequency' },
   ] : [];
 
   const earningsData = h?.races ? h.races.slice().reverse().map(r => ({
@@ -227,10 +239,20 @@ export default function Profiles() {
         <div className="label" style={{ color: '#C59757', marginBottom: 14, fontSize: 18 }}>Profiling</div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 54px)', fontWeight: 500, color: '#D6D1CC', marginBottom: 14 }}>Horse Profiles</h1>
         <p style={{ fontSize: 19, color: '#8A847E', maxWidth: 600, lineHeight: 1.7, marginBottom: 14 }}>
-          Search {totalCount.toLocaleString()} horses — GPS and traditional — to see race history, earnings, and performance data.
+          Search {totalCount.toLocaleString()} horses, GPS and traditional, to see race history, earnings, and performance data.
         </p>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the horse index." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={56} width="100%" radius={8} style={{ marginBottom: 32 }} />
+          <Skeleton height={18} width={140} style={{ marginBottom: 18 }} />
+          <SkeletonCards count={8} height={128} minWidth={240} />
+        </div>
+      ) : (
+        <>
       {/* Search */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} style={{ marginBottom: 48, position: 'relative', zIndex: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 26px', borderRadius: 4, background: '#141A10', border: '1px solid rgba(197,151,87,0.1)' }}>
@@ -309,12 +331,12 @@ export default function Profiles() {
               <div style={{ padding: '40px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 30 }}>
                 {[
                   ['Total Earnings', `$${h.totalEarnings?.toLocaleString() || '0'}`, '#C59757'],
-                  ['Avg Finish', h.avgFinish || '—', '#D6D1CC'],
+                  ['Avg Finish', h.avgFinish || '–', '#D6D1CC'],
                   ['Avg Purse', `$${h.avgPurse?.toLocaleString() || '0'}`, '#D6D1CC'],
-                  ['Avg Field', h.avgFieldSize || '—', '#D6D1CC'],
-                  ['Best Speed', h.bestPeak ? `${h.bestPeak} mph` : '—', h.hasGPS ? '#D6D1CC' : '#5A5550'],
-                  ['Ground Loss', h.avgGroundLoss != null ? `${h.avgGroundLoss}m` : '—', h.hasGPS ? '#D6D1CC' : '#5A5550'],
-                  ['Stride Fade', h.strideFade != null ? `${h.strideFade}%` : '—', h.hasGPS ? '#D6D1CC' : '#5A5550'],
+                  ['Avg Field', h.avgFieldSize || '–', '#D6D1CC'],
+                  ['Best Speed', h.bestPeak ? `${h.bestPeak} mph` : '–', h.hasGPS ? '#D6D1CC' : '#5A5550'],
+                  ['Ground Loss', h.avgGroundLoss != null ? `${h.avgGroundLoss}m` : '–', h.hasGPS ? '#D6D1CC' : '#5A5550'],
+                  ['Stride Fade', h.strideFade != null ? `${h.strideFade}%` : '–', h.hasGPS ? '#D6D1CC' : '#5A5550'],
                   ['Total Starts', `${h.numRaces}`, '#D6D1CC'],
                 ].map(([l, v, c]) => (
                   <div key={l}>
@@ -325,7 +347,7 @@ export default function Profiles() {
               </div>
             </div>
 
-            {/* Radar for GPS horses — enhanced with baseline comparison */}
+            {/* Radar for GPS horses, enhanced with baseline comparison */}
             {h.hasGPS && radarData.length > 0 && (
               <div className="card-flat" style={{ padding: 28, marginBottom: 28, borderColor: 'rgba(155,114,207,0.15)' }}>
                 <div style={{ marginBottom: 16 }}>
@@ -360,7 +382,7 @@ export default function Profiles() {
                     {radarDimensions.map(d => {
                       const isNeutral = Math.abs(d.delta) < (d.neutralIf ?? 0.05);
                       const isBetter = d.lowerBetter ? d.delta < 0 : d.delta > 0;
-                      const arrow = isNeutral ? '—' : isBetter ? '▲' : '▼';
+                      const arrow = isNeutral ? '–' : isBetter ? '▲' : '▼';
                       const deltaColor = isNeutral ? '#5A5550' : isBetter ? '#52B788' : '#C2653A';
                       const traitLabel = isNeutral
                         ? `matches the field on ${d.trait}`
@@ -496,7 +518,7 @@ export default function Profiles() {
                         <div style={{ display: 'flex', gap: 13, fontSize: 14, color: '#5A5550' }}>
                           <span>{p.numRaces} races</span>
                           {p.hasGPS && <span style={{ color: '#52B788' }}>{p.numGPSRaces} GPS</span>}
-                          <span>Avg fin: {p.avgFinish || '—'}</span>
+                          <span>Avg fin: {p.avgFinish || '–'}</span>
                         </div>
                       </div>
                     </div>
@@ -507,6 +529,8 @@ export default function Profiles() {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

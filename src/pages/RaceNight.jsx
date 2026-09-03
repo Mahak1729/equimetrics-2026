@@ -1,5 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useJSON } from '../hooks/useJSON';
+import { SkeletonList, Skeleton, LoadError } from '../components/Loading';
 import RaceReplay from '../components/RaceReplay';
 import { getPortrait } from '../data/portraits';
 
@@ -14,8 +16,7 @@ const COLORS = ['#C59757','#52B788','#5B8DEF','#E8B86D','#9B72CF','#C2653A','#4E
 const fadeUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 } };
 
 export default function RaceNight() {
-  const [replayRaces, setReplayRaces] = useState([]);
-  useEffect(() => { fetch('/data/replays.json').then(r => r.json()).then(setReplayRaces); }, []);
+  const { data: replayRaces, loading, error, retry } = useJSON('/data/replays.json', []);
 
   const dates = useMemo(() => [...new Set(replayRaces.map(r => r.date))].sort().reverse(), [replayRaces]);
   const [selDate, setSelDate] = useState(null);
@@ -38,11 +39,26 @@ export default function RaceNight() {
         <p style={{ fontSize: 19, color: '#8A847E', marginBottom: 14 }}>
           Choose a race and watch it unfold gate by gate with GPS tracking.
         </p>
-        <p style={{ fontSize: 18, color: '#5A5550', marginBottom: 48 }}>
-          {replayRaces.length} races · {new Set(replayRaces.map(r => r.track)).size} tracks · {dates.length} race days
-        </p>
+        <div style={{ marginBottom: 48, minHeight: 26 }}>
+          {loading ? (
+            <Skeleton height={20} width={280} />
+          ) : (
+            <p style={{ fontSize: 18, color: '#5A5550' }}>
+              {replayRaces.length} races · {new Set(replayRaces.map(r => r.track)).size} tracks · {dates.length} race days
+            </p>
+          )}
+        </div>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the replay data." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={18} width={110} style={{ marginBottom: 14 }} />
+          <SkeletonList rows={4} height={92} />
+        </div>
+      ) : (
+        <>
       {/* Date selector */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ marginBottom: 28 }}>
         <div className="label" style={{ marginBottom: 14, fontSize: 15 }}>Race Day</div>
@@ -122,7 +138,7 @@ export default function RaceNight() {
                     borderBottom: i < activeRace.horses.length - 1 ? '1px solid rgba(197,151,87,0.03)' : 'none',
                   }}>
                     <div style={{ fontFamily: 'var(--font-serif)', fontSize: 24, color: i === 0 ? '#C59757' : '#5A5550' }}>
-                      {horse.finalPos || '—'}
+                      {horse.finalPos || '–'}
                     </div>
                     <div style={{ width: 42, height: 42, borderRadius: 5, overflow: 'hidden', border: `1px solid ${color}40` }}>
                       <img src={getPortrait(horse.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -136,6 +152,8 @@ export default function RaceNight() {
             </div>
           </motion.div>
         </AnimatePresence>
+      )}
+        </>
       )}
     </div>
   );

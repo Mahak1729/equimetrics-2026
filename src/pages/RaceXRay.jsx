@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Trophy } from 'lucide-react';
+import { SkeletonList, Skeleton, LoadError } from '../components/Loading';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -51,17 +52,28 @@ export default function RaceXRay() {
   const [totalGPSRaces, setTotalGPSRaces] = useState(155);
   const [allRaces, setAllRaces] = useState([]);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const retry = () => setReloadKey(k => k + 1);
+
   // Fetch all GPS races from static file
   useEffect(() => {
-    fetch('/data/gps-races.json').then(r => r.json()).then(d => {
+    setLoading(true);
+    setError(null);
+    fetch('/data/gps-races.json')
+      .then(r => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
+      .then(d => {
       setAllRaces(d);
       setTotalGPSRaces(d.length);
       setBrowseRaces(d.slice(0, 12).map(r => {
         const w = [...r.horses].sort((a, b) => (a.position || 99) - (b.position || 99))[0];
         return { id: r.id, date: r.date, track: r.track, raceNum: r.raceNum, distance: r.distance, surface: r.surface, type: r.type, purse: r.purse, horseCount: r.horses.length, winnerName: w?.name, trackName: TRACK_NAMES[r.track] || r.track };
       }));
-    });
-  }, []);
+        setLoading(false);
+      })
+      .catch(err => { setError(err); setLoading(false); });
+  }, [reloadKey]);
 
   // Instant in-memory search
   useEffect(() => {
@@ -90,7 +102,7 @@ export default function RaceXRay() {
   const selectRace = (r) => {
     setQuery('');
     setShowDrop(false);
-    // Full data is already in memory — look it up by id
+    // Full data is already in memory, so look it up by id
     const full = r.horses?.length && r.horses[0].speeds ? r : allRaces.find(x => x.id === r.id);
     if (full) {
       setSelected(full);
@@ -153,11 +165,11 @@ export default function RaceXRay() {
     })[0];
     const fadePct = worstFade?.strideLengths?.length >= 2
       ? ((worstFade.strideLengths[worstFade.strideLengths.length - 1] - worstFade.strideLengths[Math.floor(worstFade.strideLengths.length / 2)]) / worstFade.strideLengths[Math.floor(worstFade.strideLengths.length / 2)] * 100).toFixed(1)
-      : '—';
+      : '–';
     return [
-      { value: fastest?.peakMPH?.toFixed(1) || '—', unit: 'mph', label: 'Peak Speed', sub: fastest?.name },
-      { value: bestCloser?.closingMPH?.toFixed(1) || '—', unit: 'mph', label: 'Closing Velocity', sub: bestCloser?.name },
-      { value: mostLoss?.groundLoss != null ? `+${mostLoss.groundLoss}` : '—', unit: 'm', label: 'Max Ground Loss', sub: mostLoss?.name },
+      { value: fastest?.peakMPH?.toFixed(1) || '–', unit: 'mph', label: 'Peak Speed', sub: fastest?.name },
+      { value: bestCloser?.closingMPH?.toFixed(1) || '–', unit: 'mph', label: 'Closing Velocity', sub: bestCloser?.name },
+      { value: mostLoss?.groundLoss != null ? `+${mostLoss.groundLoss}` : '–', unit: 'm', label: 'Max Ground Loss', sub: mostLoss?.name },
       { value: fadePct, unit: '%', label: 'Stride Fade', sub: worstFade?.name },
     ];
   }, [horses]);
@@ -173,10 +185,19 @@ export default function RaceXRay() {
         <div className="label" style={{ color: '#C59757', marginBottom: 14, fontSize: 18 }}>Analysis</div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 54px)', fontWeight: 500, color: '#D6D1CC', marginBottom: 14 }}>Deep Dive</h1>
         <p style={{ fontSize: 19, color: '#8A847E', marginBottom: 48 }}>
-          Search {totalGPSRaces} GPS races — pick one to see speed, stride, ground loss, and effort-adjusted rankings.
+          Search {totalGPSRaces} GPS races. Pick one to see speed, stride, ground loss, and effort-adjusted rankings.
         </p>
       </motion.div>
 
+      {error ? (
+        <LoadError message="Could not load the GPS race data." onRetry={retry} />
+      ) : loading ? (
+        <div>
+          <Skeleton height={56} width="100%" radius={8} style={{ marginBottom: 32 }} />
+          <SkeletonList rows={6} height={92} />
+        </div>
+      ) : (
+        <>
       {/* Search */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ marginBottom: 48, position: 'relative', zIndex: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 26px', borderRadius: 4, background: '#141A10', border: '1px solid rgba(197,151,87,0.1)' }}>
@@ -427,9 +448,9 @@ export default function RaceXRay() {
                             {isWinner && <Trophy style={{ width: 15, height: 15, color: '#C59757' }} />}
                           </div>
                         </td>
-                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: '#5A5550' }}>{h.position || '—'}</td>
+                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: '#5A5550' }}>{h.position || '–'}</td>
                         <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: (h.groundLoss || 0) > 15 ? '#C59757' : '#5A5550' }}>+{h.groundLoss || 0}m</td>
-                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{h.closingMPH || '—'} mph</td>
+                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{h.closingMPH || '–'} mph</td>
                         <td style={{ padding: '18px 36px', fontSize: 17, color: improved ? '#C59757' : '#5A5550' }}>{improved ? 'Undervalued' : 'Fair'}</td>
                       </tr>
                     );
@@ -478,6 +499,8 @@ export default function RaceXRay() {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </div>
   );
 }

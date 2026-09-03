@@ -29,7 +29,7 @@ export default function PaceProjection() {
       <div style={{ padding: '20px 28px', borderBottom: '1px solid rgba(197,151,87,0.06)' }}>
         <div className="label" style={{ color: '#C59757', marginBottom: 8 }}>AI Projection</div>
         <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 500, color: '#D6D1CC' }}>
-          Pace Scenario — {race.trackName} R{race.raceNumber}
+          Pace Scenario: {race.trackName} R{race.raceNumber}
         </h3>
         <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#5A5550', marginTop: 4 }}>
           {race.date} · {race.distance} {race.surface} · {race.purse}
@@ -64,7 +64,7 @@ export default function PaceProjection() {
       <div style={{ padding: '0 28px 24px' }}>
         <div style={{ borderLeft: '3px solid #C59757', paddingLeft: 16 }}>
           <p style={{ fontSize: 15, color: '#8A847E', lineHeight: 1.7 }}>
-            Floge sets the pace. Luna Moth stalks and strikes in the stretch. <span style={{ color: '#C59757' }}>Value pick: Foxy Cara (4/1)</span> — pace setup strongly favors closers.
+            Floge sets the pace. Luna Moth stalks and strikes in the stretch. <span style={{ color: '#C59757' }}>Value pick: Foxy Cara (4/1)</span>. The pace setup strongly favors closers.
           </p>
         </div>
       </div>

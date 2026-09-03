@@ -15,7 +15,7 @@ export default function GroundLossChart() {
         <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>Meters</span>
       </div>
       <p style={{ fontSize: 15, color: '#8A847E', marginBottom: 24, lineHeight: 1.7 }}>
-        Extra distance traveled vs. rail path. Horses running wider cover more ground — a horse finishing 2nd with high ground loss may be the strongest runner.
+        Extra distance traveled vs. rail path. Horses running wider cover more ground, so a horse finishing 2nd with high ground loss may be the strongest runner.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>

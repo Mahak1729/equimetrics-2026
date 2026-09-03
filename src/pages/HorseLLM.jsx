@@ -28,7 +28,7 @@ const LOADING_PUNS = [
 const SUGGESTIONS = [
   "Who do you think will win Tampa Bay R7 on March 28?",
   "Which horse has the best closing speed in the Aqueduct R9 field?",
-  "I live in Lexington, KY — any races near me this weekend?",
+  "I live in Lexington, KY. Any races near me this weekend?",
   "Explain what ground loss means and why it matters",
   "What's the difference between a stalker and a closer?",
   "Which horse is the best value bet this week based on GPS data?",
@@ -73,7 +73,7 @@ export default function HorseLLM() {
     setLoading(true);
 
     try {
-      // Send only user/assistant messages — server builds RAG context
+      // Send only user/assistant messages; the server builds the RAG context
       const chatMessages = newMessages.slice(-10).map(m => ({ role: m.role, content: m.content }));
 
       const res = await fetch('/api/chat', {
@@ -85,7 +85,7 @@ export default function HorseLLM() {
       const data = await res.json();
 
       if (res.status === 429) {
-        setMessages(prev => [...prev, { role: 'assistant', content: 'Whoa there — too many questions at once! Give me a moment to catch my breath.' }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Whoa there, too many questions at once! Give me a moment to catch my breath.' }]);
       } else if (res.status === 400) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.error || 'Invalid request. Try a shorter question.' }]);
       } else if (data.content) {

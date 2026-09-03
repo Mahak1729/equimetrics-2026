@@ -74,10 +74,10 @@ export default function Insights() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28 }}>
           {[
             { title: 'Ground Loss Detection', desc: 'Measure exact extra distance traveled by horses running wide. Reveals hidden talent that traditional data completely misses.' },
-            { title: 'True Sectional Speed', desc: 'Exact speed for every horse at every gate — not just the leader. Complete velocity profiles for smarter comparisons.' },
+            { title: 'True Sectional Speed', desc: 'Exact speed for every horse at every gate, not just the leader. Complete velocity profiles for smarter comparisons.' },
             { title: 'Stride Biomechanics', desc: 'Stride count and length at every section. Detect fatigue onset, stamina ceilings, and fitness changes across races.' },
             { title: 'Running Style DNA', desc: 'Classify horses beyond simple labels. GPS reveals acceleration curves, energy distribution, and tactical patterns.' },
-            { title: 'Closing Velocity', desc: 'How fast at the finish — a direct measure of remaining energy that predicts next-race improvement.' },
+            { title: 'Closing Velocity', desc: 'How fast at the finish. A direct measure of remaining energy that predicts next-race improvement.' },
             { title: 'Hidden Trouble Flags', desc: 'Detect mid-race interference through anomalous sectional times. Project what the finish would have been.' },
           ].map((c, i) => (
             <motion.div key={c.title} {...fadeUp} transition={{ delay: i * 0.06 }}>
