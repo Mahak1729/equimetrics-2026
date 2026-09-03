@@ -150,8 +150,10 @@ vite.config.js  Vite config plus the dev-time /api middleware
 vercel.json     Rewrites and security headers
 ```
 
-## Maintainer
+## Credits
+
+Originally built by [chbayah-sudo](https://github.com/chbayah-sudo) and
+[Mahak1729](https://github.com/Mahak1729) as the coders, with contributions from the
+rest of the Econ Games 2026 teams.
 
 Maintained by [Mahak1729](https://github.com/Mahak1729).
-
-Originally built with [chbayah-sudo](https://github.com/chbayah-sudo).
