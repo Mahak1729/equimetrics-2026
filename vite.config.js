@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
 function loadJSON(name) {
-  return JSON.parse(readFileSync(resolve(__dirname, `api/_data/${name}`), 'utf-8'))
+  return JSON.parse(readFileSync(resolve(__dirname, `server/data/${name}`), 'utf-8'))
 }
 
 export default defineConfig(({ mode }) => {
@@ -25,7 +25,7 @@ export default defineConfig(({ mode }) => {
   function getReplays() { if (!_replays) _replays = loadJSON('replayRaces.json'); return _replays }
   async function getForecast() {
     if (!_forecastRaces) {
-      const mod = await import('./api/_data/forecastData.js')
+      const mod = await import('./server/data/forecastData.js')
       _forecastRaces = mod.forecastRaces
     }
     return _forecastRaces
@@ -157,7 +157,7 @@ export default defineConfig(({ mode }) => {
             sendJSON(res, { total: races.length, races: races.slice(0, n).map(summarizeRace) }, 's-maxage=3600')
           })
 
-          // /api/chat — mirrors api/chat.js so dev matches the Vercel function
+          // /api/chat — mirrors netlify/functions/chat.mjs so dev matches production
           server.middlewares.use('/api/chat', async (req, res) => {
             if (req.method !== 'POST') { res.statusCode = 405; return res.end(JSON.stringify({ error: 'Method not allowed' })) }
             const ip = req.socket?.remoteAddress || 'local'
@@ -170,7 +170,7 @@ export default defineConfig(({ mode }) => {
             const { messages } = body
 
             // Loaded lazily so the dev server does not pay for the data files at startup
-            const { validateMessages, requestCompletion } = await import('./api/chat.js')
+            const { validateMessages, requestCompletion } = await import('./server/chat.js')
             const invalid = validateMessages(messages)
             if (invalid) { res.statusCode = 400; return res.end(JSON.stringify({ error: invalid })) }
 
