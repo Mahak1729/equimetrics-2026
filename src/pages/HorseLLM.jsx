@@ -88,8 +88,8 @@ export default function HorseLLM() {
         setMessages(prev => [...prev, { role: 'assistant', content: 'Whoa there — too many questions at once! Give me a moment to catch my breath.' }]);
       } else if (res.status === 400) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.error || 'Invalid request. Try a shorter question.' }]);
-      } else if (data.choices?.[0]?.message?.content) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.choices[0].message.content }]);
+      } else if (data.content) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.content }]);
       } else {
         setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I couldn\'t process that. Try again.' }]);
       }

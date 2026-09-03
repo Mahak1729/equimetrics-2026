@@ -157,7 +157,7 @@ export default defineConfig(({ mode }) => {
             sendJSON(res, { total: races.length, races: races.slice(0, n).map(summarizeRace) }, 's-maxage=3600')
           })
 
-          // /api/chat
+          // /api/chat — mirrors api/chat.js so dev matches the Vercel function
           server.middlewares.use('/api/chat', async (req, res) => {
             if (req.method !== 'POST') { res.statusCode = 405; return res.end(JSON.stringify({ error: 'Method not allowed' })) }
             const ip = req.socket?.remoteAddress || 'local'
@@ -168,29 +168,24 @@ export default defineConfig(({ mode }) => {
 
             const body = await parseBody(req)
             const { messages } = body
-            if (!messages || !Array.isArray(messages) || messages.length > 20) { res.statusCode = 400; return res.end(JSON.stringify({ error: 'Invalid request' })) }
+
+            // Loaded lazily so the dev server does not pay for the data files at startup
+            const { validateMessages, requestCompletion } = await import('./api/chat.js')
+            const invalid = validateMessages(messages)
+            if (invalid) { res.statusCode = 400; return res.end(JSON.stringify({ error: invalid })) }
+
+            if (!env.ANTHROPIC_API_KEY) {
+              res.statusCode = 500
+              return res.end(JSON.stringify({ error: 'ANTHROPIC_API_KEY is not set — add it to .env' }))
+            }
 
             try {
-              // Build context server-side
-              const { buildSystemPrompt, findRelevantHorses, findRelevantRaces } = await import('./api/_data/buildContext.js')
-              const latestUserMsg = [...messages].reverse().find(m => m.role === 'user')?.content || ''
-              let ragContext = ''
-              const horseCtx = findRelevantHorses(latestUserMsg)
-              const raceCtx = findRelevantRaces(latestUserMsg)
-              if (horseCtx.length > 0) ragContext += '\n\nRELEVANT HORSE DATA:\n' + horseCtx.join('\n\n')
-              if (raceCtx.length > 0) ragContext += '\n\nRELEVANT RACE DATA:\n' + raceCtx.join('\n')
-              const systemPrompt = buildSystemPrompt() + ragContext
-
-              const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${env.OPENAI_API_KEY}` },
-                body: JSON.stringify({ model: 'gpt-4o-mini', messages: [{ role: 'system', content: systemPrompt }, ...messages.slice(-10)], max_tokens: 400, temperature: 0.7 }),
-              })
-              const data = await response.json()
-              sendJSON(res, data)
+              const { default: Anthropic } = await import('@anthropic-ai/sdk')
+              const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
+              sendJSON(res, await requestCompletion(client, messages))
             } catch (err) {
-              res.statusCode = 500
-              res.end(JSON.stringify({ error: 'Failed to reach OpenAI' }))
+              res.statusCode = 502
+              res.end(JSON.stringify({ error: 'Failed to reach the Claude API' }))
             }
           })
         },
