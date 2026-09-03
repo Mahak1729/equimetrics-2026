@@ -6,7 +6,7 @@ const fadeUp = { initial: { opacity: 0, y: 20 }, whileInView: { opacity: 1, y: 0
 
 export default function Insights() {
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px 40px 80px' }}>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px clamp(18px, 4vw, 40px) 80px' }}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="label" style={{ color: '#C59757', marginBottom: 14, fontSize: 18 }}>The Advantage</div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 54px)', fontWeight: 500, color: '#D6D1CC', marginBottom: 56 }}>GPS Edge</h1>
@@ -18,21 +18,21 @@ export default function Insights() {
         <motion.div {...fadeUp} transition={{ delay: 0.1 }}>
           <div className="card-flat" style={{ padding: 44, height: '100%' }}>
             <div className="label" style={{ marginBottom: 24, fontSize: 14 }}>Traditional</div>
-            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 72, fontWeight: 400, color: '#5A5550', marginBottom: 10 }}>
+            <div style={{ fontFamily: 'var(--font-serif)', fontSize: 72, fontWeight: 400, color: '#8A847E', marginBottom: 10 }}>
               {comparisonData.traditional.dataPoints}
             </div>
             <p style={{ fontSize: 19, color: '#8A847E', marginBottom: 28 }}>{comparisonData.traditional.label}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 28 }}>
               {comparisonData.traditional.metrics.map(m => (
-                <div key={m} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 18, color: '#5A5550' }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5A5550' }} />{m}
+                <div key={m} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 18, color: '#8A847E' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#8A847E' }} />{m}
                 </div>
               ))}
             </div>
             <div style={{ padding: 20, borderRadius: 4, background: '#1C2418' }}>
-              <p style={{ fontSize: 17, color: '#5A5550', fontStyle: 'italic', lineHeight: 1.6 }}>"{comparisonData.traditional.example}"</p>
+              <p style={{ fontSize: 17, color: '#8A847E', fontStyle: 'italic', lineHeight: 1.6 }}>"{comparisonData.traditional.example}"</p>
             </div>
-            <p style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: '#5A5550', marginTop: 16 }}>{comparisonData.traditional.precision}</p>
+            <p style={{ fontSize: 13, fontFamily: 'var(--font-mono)', color: '#8A847E', marginTop: 16 }}>{comparisonData.traditional.precision}</p>
           </div>
         </motion.div>
 
@@ -110,7 +110,7 @@ export default function Insights() {
               <div key={s.label} style={{ padding: 28, borderRadius: 4, background: '#1C2418' }}>
                 <div style={{ fontFamily: 'var(--font-serif)', fontSize: 44, fontWeight: 400, color: '#C59757', marginBottom: 12 }}>{s.value}</div>
                 <div style={{ fontSize: 19, fontWeight: 500, color: '#D6D1CC' }}>{s.label}</div>
-                <div style={{ fontSize: 15, color: '#5A5550', marginTop: 6 }}>{s.sub}</div>
+                <div style={{ fontSize: 15, color: '#8A847E', marginTop: 6 }}>{s.sub}</div>
               </div>
             ))}
           </div>

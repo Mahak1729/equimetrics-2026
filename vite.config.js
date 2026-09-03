@@ -183,7 +183,7 @@ export default defineConfig(({ mode }) => {
               const { default: Anthropic } = await import('@anthropic-ai/sdk')
               const client = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY })
               sendJSON(res, await requestCompletion(client, messages))
-            } catch (err) {
+            } catch {
               res.statusCode = 502
               res.end(JSON.stringify({ error: 'Failed to reach the Claude API' }))
             }

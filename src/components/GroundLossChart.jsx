@@ -12,7 +12,7 @@ export default function GroundLossChart() {
           <div className="label" style={{ marginBottom: 8 }}>GPS Exclusive</div>
           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 500, color: '#D6D1CC' }}>Ground Loss</h3>
         </div>
-        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>Meters</span>
+        <span style={{ fontSize: 11, fontFamily: 'var(--font-mono)', color: '#8A847E' }}>Meters</span>
       </div>
       <p style={{ fontSize: 15, color: '#8A847E', marginBottom: 24, lineHeight: 1.7 }}>
         Extra distance traveled vs. rail path. Horses running wider cover more ground, so a horse finishing 2nd with high ground loss may be the strongest runner.

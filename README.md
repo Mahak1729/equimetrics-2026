@@ -1,31 +1,61 @@
-# Equimetrics 2026
+# Equimetrics
 
-GPS-powered horse racing intelligence, built for the 2026 Equibase Econ Games.
+**A horse racing analytics platform that turns sectional GPS telemetry into readable form
+for 12,919 horses across 52,767 race starts, with a Claude-powered assistant that answers
+questions about the data in plain English.**
 
-Equimetrics turns raw sectional GPS data into something a human can read: per-furlong
-speed, closing velocity, stride length and fade, ground loss from running wide, and
-position at every gate. On top of that sits **HorseLLM**, a chat assistant that answers
-questions about horses and upcoming races using the same dataset.
+[**Live site**](https://equimetrics2026.mahakmkumawat.com) · Built for the 2026 Equibase
+Econ Games
 
-Built with React 19, Vite, Tailwind CSS, Recharts, Mapbox GL and the Anthropic API,
-deployed on Netlify.
+## Why GPS changes the analysis
+
+Traditional past performances tell you where a horse finished and how far back it was.
+That hides most of what happened. A horse can run the fastest race in the field and still
+lose because it was carried four wide around both turns.
+
+Sectional GPS gives a position and a speed for every horse at every sixteenth of a mile,
+so the platform can measure what the finishing order does not show:
+
+| Metric | What it answers |
+| --- | --- |
+| Sectional speed | How fast, for every horse at every gate, not just the leader |
+| Closing velocity | Speed at the finish, a direct read on energy left in the tank |
+| Stride length and fade | Whether a horse is holding form or shortening under pressure |
+| Ground loss | Extra metres run by going wide, so a wide 2nd may be the best horse |
+
+Of 71 tracks in the dataset, 32 are GPS-equipped. The platform covers both, and is
+explicit about which horses have telemetry and which have traditional form only.
 
 ## Features
 
-- **Profiles** — searchable horse profiles with GPS and traditional form
-- **Race X-Ray** — gate-by-gate breakdown of a single race
-- **Race Replay** — animated replay driven by GPS positions
-- **Race Night / Preview / Insights** — upcoming cards with GPS-derived analysis
-- **Journey Map** — Mapbox map of where a horse has raced
-- **HorseLLM** — Claude-powered chat over the racing dataset
+- **Horse Profiles**: search 12,919 horses, with GPS and traditional form side by side
+  and a radar comparison against the field baseline
+- **Deep Dive**: gate-by-gate breakdown of a single race, ranked by effort-adjusted speed
+- **Live Replay**: animated race replay driven by real GPS positions
+- **Forecast and GPS Edge**: upcoming cards with pace projections and value picks
+- **StableMatch**: swipe through upcoming runners to build a shortlist
+- **EquiBets**: play-money prediction markets over race and GPS outcomes
+- **HorseLLM**: ask questions in plain English; retrieval pulls the relevant horses and
+  races into context before the model answers
+
+## How it is built
+
+React 19 and Vite for the front end, Recharts for the telemetry charts, Mapbox GL for the
+journey map, and two Netlify Functions for the API. The chat endpoint calls Claude through
+the official Anthropic SDK, with the large unchanging briefing marked for prompt caching
+and the per-question retrieved context placed after the cache breakpoint so it never
+invalidates the cached prefix.
+
+The dataset ships with the repository as static JSON, so there is no database to
+provision and the site works from a clean clone.
 
 ## Getting started
 
 Requires Node.js 20 or newer.
 
 ```bash
-git clone https://github.com/Mahak1729/equimetrics2026.git
-cd equimetrics2026
+git clone https://github.com/Mahak1729/equimetrics-2026.git
+cd equimetrics-2026
 npm install
 cp .env.example .env   # then fill in your keys
 npm run dev
@@ -57,6 +87,18 @@ Copy `.env.example` to `.env` and fill it in. `.env` is gitignored.
 
 Everything else the app needs is committed under `server/data/`, so there is no database
 to provision.
+
+### Controlling chat spend
+
+`/api/chat` is public, so it is worth bounding. The endpoint caps requests per IP per
+minute and per day, caps requests per function instance per day, limits how many
+conversation turns are forwarded upstream, and caps `max_tokens` on the reply. Those
+counters live in memory and a serverless platform runs many instances, so treat them as a
+speed bump.
+
+The only hard ceiling is on the account itself: set a monthly spend limit under
+**Limits** in the [Anthropic Console](https://console.anthropic.com/settings/limits).
+Nothing in this repository can override it.
 
 ## API routes
 
@@ -117,6 +159,20 @@ matters: repeat questions reuse the cached briefing instead of paying for it aga
 
 Because the chat key is only ever read inside the function, it is safe in Netlify's
 environment variables and never reaches the browser.
+
+## Testing
+
+```bash
+npm test          # run once
+npm run test:watch
+```
+
+Vitest covers the pure logic behind the chat endpoint: request validation, the origin
+allowlist (including referers with a path and lookalike hosts), content-block flattening,
+and the prompt-cache layout, plus the retrieval helpers in `server/data/buildContext.js`.
+
+CI runs lint, tests and the build on every push and pull request
+(`.github/workflows/ci.yml`).
 
 ## Deployment
 

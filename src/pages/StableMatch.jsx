@@ -148,14 +148,14 @@ function SwipeCard({ horse, onSwipe, isTop, exitDirection }) {
               { icon: Trophy, label: 'GPS Score', value: horse.gpsScore != null ? `${horse.gpsScore}` : '–', highlight: horse.gpsScore >= 80 },
             ].map(stat => (
               <div key={stat.label} style={{ textAlign: 'center' }}>
-                <stat.icon style={{ width: 16, height: 16, color: stat.highlight ? '#C59757' : '#5A5550', margin: '0 auto 5px' }} />
+                <stat.icon style={{ width: 16, height: 16, color: stat.highlight ? '#C59757' : '#8A847E', margin: '0 auto 5px' }} />
                 <div style={{
                   fontFamily: 'var(--font-mono)', fontSize: 17, fontWeight: 600,
                   color: stat.highlight ? '#C59757' : '#D6D1CC', marginBottom: 2,
                 }}>
                   {stat.value}
                 </div>
-                <div style={{ fontSize: 10, color: '#5A5550', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                <div style={{ fontSize: 10, color: '#8A847E', letterSpacing: '1px', textTransform: 'uppercase' }}>
                   {stat.label}
                 </div>
               </div>
@@ -181,7 +181,7 @@ function SwipeCard({ horse, onSwipe, isTop, exitDirection }) {
           </div>
 
           {/* Jockey/Trainer */}
-          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: 13, color: '#5A5550', paddingTop: 8, borderTop: '1px solid rgba(197,151,87,0.06)' }}>
+          <div style={{ marginTop: 'auto', textAlign: 'center', fontSize: 13, color: '#8A847E', paddingTop: 8, borderTop: '1px solid rgba(197,151,87,0.06)' }}>
             J: {horse.jockey} &middot; T: {horse.trainer}
           </div>
         </div>
@@ -229,7 +229,7 @@ function PreferencesScreen({ onStart }) {
                 transition: 'all 250ms',
                 background: active ? `${col}15` : 'transparent',
                 border: active ? `1px solid ${col}40` : '1px solid rgba(197,151,87,0.06)',
-                color: active ? col : '#5A5550',
+                color: active ? col : '#8A847E',
               }}>
                 {s === 'Front Runner' ? 'Speed' : s}
               </button>
@@ -250,7 +250,7 @@ function PreferencesScreen({ onStart }) {
                 transition: 'all 250ms',
                 background: active ? '#141A10' : 'transparent',
                 border: active ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-                color: active ? '#C59757' : '#5A5550',
+                color: active ? '#C59757' : '#8A847E',
               }}>
                 {r.label}
               </button>
@@ -271,7 +271,7 @@ function PreferencesScreen({ onStart }) {
                 transition: 'all 250ms',
                 background: active ? '#141A10' : 'transparent',
                 border: active ? '1px solid rgba(197,151,87,0.2)' : '1px solid rgba(197,151,87,0.06)',
-                color: active ? '#C59757' : '#5A5550',
+                color: active ? '#C59757' : '#8A847E',
               }}>
                 {s}
               </button>
@@ -294,7 +294,7 @@ function PreferencesScreen({ onStart }) {
             borderRadius: 2, accentColor: '#C59757',
           }}
         />
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, color: '#5A5550', marginTop: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, color: '#8A847E', marginTop: 8 }}>
           <span>Any</span><span>90+</span>
         </div>
       </div>
@@ -331,7 +331,7 @@ function MatchesScreen({ matches, onReset }) {
         }}>
           {matches.length > 0 ? 'Your Stable' : 'No Matches'}
         </h2>
-        <p style={{ fontSize: 17, color: '#5A5550' }}>
+        <p style={{ fontSize: 17, color: '#8A847E' }}>
           {matches.length > 0
             ? `You matched with ${matches.length} horse${matches.length > 1 ? 's' : ''} for upcoming races.`
             : 'You passed on everyone. Try again with different preferences.'}
@@ -374,7 +374,7 @@ function MatchesScreen({ matches, onReset }) {
                       </span>
                     )}
                   </div>
-                  <div style={{ fontSize: 16, color: '#5A5550' }}>
+                  <div style={{ fontSize: 16, color: '#8A847E' }}>
                     {horse.raceName} &middot; J: {horse.jockey}
                   </div>
                 </div>
@@ -383,14 +383,14 @@ function MatchesScreen({ matches, onReset }) {
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 600, color: '#C59757' }}>
                       {horse.odds}
                     </div>
-                    <div style={{ fontSize: 9, color: '#5A5550', textTransform: 'uppercase', letterSpacing: '1px' }}>Odds</div>
+                    <div style={{ fontSize: 9, color: '#8A847E', textTransform: 'uppercase', letterSpacing: '1px' }}>Odds</div>
                   </div>
                   {strideLen && (
                     <div style={{ textAlign: 'center' }}>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 600, color: '#D6D1CC' }}>
                         {strideLen}
                       </div>
-                      <div style={{ fontSize: 9, color: '#5A5550', textTransform: 'uppercase', letterSpacing: '1px' }}>Stride</div>
+                      <div style={{ fontSize: 9, color: '#8A847E', textTransform: 'uppercase', letterSpacing: '1px' }}>Stride</div>
                     </div>
                   )}
                   {horse.gpsScore != null && (
@@ -401,7 +401,7 @@ function MatchesScreen({ matches, onReset }) {
                       }}>
                         {horse.gpsScore}
                       </div>
-                      <div style={{ fontSize: 9, color: '#5A5550', textTransform: 'uppercase', letterSpacing: '1px' }}>GPS</div>
+                      <div style={{ fontSize: 9, color: '#8A847E', textTransform: 'uppercase', letterSpacing: '1px' }}>GPS</div>
                     </div>
                   )}
                 </div>
@@ -421,10 +421,10 @@ function MatchesScreen({ matches, onReset }) {
 
 export default function StableMatch() {
   const [phase, setPhase] = useState('prefs'); // prefs | swiping | results
-  const [prefs, setPrefs] = useState(null);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [matches, setMatches] = useState([]);
   const [passed, setPassed] = useState([]);
+  const [, setPrefs] = useState(null);
   const [horses, setHorses] = useState([]);
   const [lastSwipe, setLastSwipe] = useState(null);
   const { data: forecastRaces, loading, error, retry } = useJSON('/data/forecast.json', []);
@@ -536,7 +536,7 @@ export default function StableMatch() {
           >
             {/* Progress */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <span style={{ fontSize: 15, color: '#5A5550' }}>
+              <span style={{ fontSize: 15, color: '#8A847E' }}>
                 {remaining > 0 ? `${remaining} horse${remaining > 1 ? 's' : ''} remaining` : 'All done!'}
               </span>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>

@@ -31,7 +31,7 @@ export default function PaceProjection() {
         <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 22, fontWeight: 500, color: '#D6D1CC' }}>
           Pace Scenario: {race.trackName} R{race.raceNumber}
         </h3>
-        <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#5A5550', marginTop: 4 }}>
+        <p style={{ fontSize: 12, fontFamily: 'var(--font-mono)', color: '#8A847E', marginTop: 4 }}>
           {race.date} · {race.distance} {race.surface} · {race.purse}
         </p>
       </div>
@@ -41,7 +41,7 @@ export default function PaceProjection() {
           <div key={h.name} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <div style={{ width: 6, height: 6, borderRadius: '50%', background: COLORS[h.name] }} />
             <span style={{ color: '#D6D1CC' }}>{h.name}</span>
-            <span style={{ fontSize: 10, color: '#5A5550' }}>{h.style}</span>
+            <span style={{ fontSize: 10, color: '#8A847E' }}>{h.style}</span>
           </div>
         ))}
       </div>
@@ -50,8 +50,8 @@ export default function PaceProjection() {
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={paceProjection} margin={{ top: 10, right: 20, left: -10, bottom: 5 }}>
             <CartesianGrid stroke="rgba(197,151,87,0.03)" strokeDasharray="3 3" />
-            <XAxis dataKey="section" tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
-            <YAxis reversed domain={[1, 5]} tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} tickFormatter={v => `P${v}`} />
+            <XAxis dataKey="section" tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
+            <YAxis reversed domain={[1, 5]} tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} tickFormatter={v => `P${v}`} />
             <Tooltip content={<CustomTooltip />} />
             {race.horses.map(h => (
               <Line key={h.name} type="monotone" dataKey={h.name} stroke={COLORS[h.name]} strokeWidth={1.5}

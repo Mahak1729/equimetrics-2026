@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SkeletonList, SkeletonCards, Skeleton, LoadError } from '../components/Loading';
+import { SkeletonCards, Skeleton, LoadError } from '../components/Loading';
+import { useJSON } from '../hooks/useJSON';
 import {
   AreaChart, Area, LineChart, Line, BarChart, Bar, XAxis, YAxis,
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar,
@@ -28,7 +29,7 @@ function PositionFlow({ positions, color, height = 48 }) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-        <YAxis reversed domain={[1, Math.max(...positions, 6)]} tick={{ fontSize: 11, fill: '#5A5550' }} axisLine={false} tickLine={false} />
+        <YAxis reversed domain={[1, Math.max(...positions, 6)]} tick={{ fontSize: 11, fill: '#8A847E' }} axisLine={false} tickLine={false} />
         <Line type="monotone" dataKey="pos" stroke={color} strokeWidth={2} dot={{ r: 2, fill: color, stroke: '#0D110A', strokeWidth: 1.5 }} />
       </LineChart>
     </ResponsiveContainer>
@@ -36,7 +37,7 @@ function PositionFlow({ positions, color, height = 48 }) {
 }
 
 function RaceRow({ race, color, isExpanded, onToggle }) {
-  const posColor = race.position ? (race.position <= 3 ? '#C59757' : '#8A847E') : '#5A5550';
+  const posColor = race.position ? (race.position <= 3 ? '#C59757' : '#8A847E') : '#8A847E';
   return (
     <div style={{ borderBottom: '1px solid rgba(197,151,87,0.04)' }}>
       <button onClick={onToggle} style={{
@@ -49,17 +50,17 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
             <span style={{ fontSize: 20, fontWeight: 500, color: '#D6D1CC' }}>{race.track} R{race.raceNum}</span>
-            <span style={{ fontSize: 17, color: '#5A5550' }}>{race.distance} {race.surface}</span>
+            <span style={{ fontSize: 17, color: '#8A847E' }}>{race.distance} {race.surface}</span>
             {race.hasGPS ? (
               <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 3, color: '#52B788', background: 'rgba(82,183,136,0.1)' }}>GPS</span>
             ) : (
               <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 3, color: '#8A847E', background: 'rgba(138,132,126,0.08)' }}>Trad</span>
             )}
           </div>
-          <div style={{ fontSize: 16, color: '#5A5550', marginTop: 4 }}>{race.date} · {race.raceType}</div>
+          <div style={{ fontSize: 16, color: '#8A847E', marginTop: 4 }}>{race.date} · {race.raceType}</div>
         </div>
         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 22, color: posColor }}>
-          {race.position || '–'}<span style={{ fontSize: 17, color: '#5A5550' }}>/{race.fieldSize || '?'}</span>
+          {race.position || '–'}<span style={{ fontSize: 17, color: '#8A847E' }}>/{race.fieldSize || '?'}</span>
         </div>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 19, color: '#C59757' }}>
           ${race.earnings?.toLocaleString() || '0'}
@@ -67,9 +68,9 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
         <div>
           {race.positions?.length > 0 ? (
             <div style={{ width: 90, height: 34 }}><PositionFlow positions={race.positions} color={color} height={34} /></div>
-          ) : <span style={{ fontSize: 17, color: '#5A5550' }}>–</span>}
+          ) : <span style={{ fontSize: 17, color: '#8A847E' }}>–</span>}
         </div>
-        <div style={{ color: '#5A5550', display: 'flex', justifyContent: 'center' }}>
+        <div style={{ color: '#8A847E', display: 'flex', justifyContent: 'center' }}>
           {isExpanded ? <ChevronUp style={{ width: 18, height: 18 }} /> : <ChevronDown style={{ width: 18, height: 18 }} />}
         </div>
       </button>
@@ -91,7 +92,7 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={race.speeds.map((v, i) => ({ i, v }))} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                           <defs><linearGradient id="expSp" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={color} stopOpacity={0.1} /><stop offset="100%" stopColor={color} stopOpacity={0} /></linearGradient></defs>
-                          <YAxis tick={{ fontSize: 13, fill: '#5A5550' }} axisLine={false} tickLine={false} domain={['dataMin - 2', 'dataMax + 1']} />
+                          <YAxis tick={{ fontSize: 13, fill: '#8A847E' }} axisLine={false} tickLine={false} domain={['dataMin - 2', 'dataMax + 1']} />
                           <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} fill="url(#expSp)" dot={false} />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -103,11 +104,11 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
                       {race.strideLengths?.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={race.strideLengths.map((v, i) => ({ i, v }))} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                            <YAxis tick={{ fontSize: 13, fill: '#5A5550' }} axisLine={false} tickLine={false} domain={['dataMin - 0.5', 'dataMax + 0.3']} />
+                            <YAxis tick={{ fontSize: 13, fill: '#8A847E' }} axisLine={false} tickLine={false} domain={['dataMin - 0.5', 'dataMax + 0.3']} />
                             <Bar dataKey="v" radius={[2, 2, 0, 0]}>{race.strideLengths.map((_, i) => <Cell key={i} fill={`${color}${i >= race.strideLengths.length - 2 ? '80' : '30'}`} />)}</Bar>
                           </BarChart>
                         </ResponsiveContainer>
-                      ) : <span style={{ fontSize: 17, color: '#5A5550' }}>–</span>}
+                      ) : <span style={{ fontSize: 17, color: '#8A847E' }}>–</span>}
                     </div>
                   </div>
                 </div>
@@ -119,7 +120,7 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
               {race.hasGPS && (
                 <div style={{ display: 'flex', gap: 28, marginTop: 16, paddingTop: 16, borderTop: '1px solid rgba(197,151,87,0.04)', flexWrap: 'wrap' }}>
                   {[['Peak', race.peakMPH ? `${race.peakMPH} mph` : '–'], ['Closing', race.closingMPH ? `${race.closingMPH} mph` : '–'], ['Ground Loss', race.groundLoss != null ? `+${race.groundLoss}m` : '–'], ['Purse', `$${race.purse?.toLocaleString()}`]].map(([l, v]) => (
-                    <div key={l}><div style={{ fontSize: 16, color: '#5A5550', textTransform: 'uppercase', letterSpacing: '1px' }}>{l}</div><div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, color: '#D6D1CC', marginTop: 5 }}>{v}</div></div>
+                    <div key={l}><div style={{ fontSize: 16, color: '#8A847E', textTransform: 'uppercase', letterSpacing: '1px' }}>{l}</div><div style={{ fontFamily: 'var(--font-mono)', fontSize: 22, color: '#D6D1CC', marginTop: 5 }}>{v}</div></div>
                   ))}
                 </div>
               )}
@@ -133,42 +134,29 @@ function RaceRow({ race, color, isExpanded, onToggle }) {
 
 export default function Profiles() {
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useState(null);
   const [showDrop, setShowDrop] = useState(false);
   const [expandedRace, setExpandedRace] = useState(0);
   const [activeTab, setActiveTab] = useState('races');
-  const [results, setResults] = useState([]);
-  const [topHorsesList, setTopHorsesList] = useState([]);
+  const [, setSelected] = useState(null);
   const [h, setH] = useState(null);
-  const [totalCount, setTotalCount] = useState(12919);
 
-  // Fetch static horse index once, which enables instant local search
-  const [profileList, setProfileList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [reloadKey, setReloadKey] = useState(0);
-  const retry = () => setReloadKey(k => k + 1);
+  // Fetch the static horse index once, which enables instant local search.
+  const { data: horseIndex, loading, error, retry } = useJSON('/data/horse-index.json', null);
 
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch('/data/horse-index.json')
-      .then(r => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
-      .then(d => {
-        const list = Object.values(d).sort((a, b) => (b.gpsScore || 0) - (a.gpsScore || 0));
-        setProfileList(list);
-        setTotalCount(list.length);
-        setTopHorsesList(list.filter(p => p.numRaces >= 2).slice(0, 16));
-        setLoading(false);
-      })
-      .catch(err => { setError(err); setLoading(false); });
-  }, [reloadKey]);
+  // Everything below is derived from that one payload.
+  const profileList = useMemo(
+    () => (horseIndex ? Object.values(horseIndex).sort((a, b) => (b.gpsScore || 0) - (a.gpsScore || 0)) : []),
+    [horseIndex],
+  );
+  const totalCount = profileList.length || 12919;
+  const topHorsesList = useMemo(() => profileList.filter(p => p.numRaces >= 2).slice(0, 16), [profileList]);
 
-  // Instant in-memory search (no network roundtrip)
-  useEffect(() => {
-    if (!query || query.length < 2) { setResults([]); return; }
+  // Instant in-memory search (no network roundtrip). Derived, not stored:
+  // results are a pure function of the query and the loaded list.
+  const results = useMemo(() => {
+    if (!query || query.length < 2) return [];
     const q = query.toLowerCase();
-    setResults(profileList.filter(p => p.name.toLowerCase().includes(q)).slice(0, 15));
+    return profileList.filter(p => p.name.toLowerCase().includes(q)).slice(0, 15);
   }, [query, profileList]);
   const color = h?.style ? (SC[h.style] || '#C59757') : '#8A847E';
   const selectHorse = async (name) => {
@@ -234,7 +222,7 @@ export default function Profiles() {
   const topHorses = topHorsesList;
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px 40px 80px' }}>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px clamp(18px, 4vw, 40px) 80px' }}>
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="label" style={{ color: '#C59757', marginBottom: 14, fontSize: 18 }}>Profiling</div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 54px)', fontWeight: 500, color: '#D6D1CC', marginBottom: 14 }}>Horse Profiles</h1>
@@ -256,12 +244,12 @@ export default function Profiles() {
       {/* Search */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} style={{ marginBottom: 48, position: 'relative', zIndex: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 26px', borderRadius: 4, background: '#141A10', border: '1px solid rgba(197,151,87,0.1)' }}>
-          <Search style={{ width: 24, height: 24, color: '#5A5550', flexShrink: 0 }} />
+          <Search style={{ width: 24, height: 24, color: '#8A847E', flexShrink: 0 }} />
           <input type="text" placeholder="Search by horse name..." value={query}
             onChange={e => { setQuery(e.target.value); setShowDrop(true); }}
             onFocus={() => { if (query.length >= 2) setShowDrop(true); }}
             style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontSize: 20, color: '#D6D1CC', fontFamily: 'var(--font-sans)' }} />
-          {query && <button onClick={() => { setQuery(''); setShowDrop(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5A5550', padding: 4 }}><X style={{ width: 20, height: 20 }} /></button>}
+          {query && <button onClick={() => { setQuery(''); setShowDrop(false); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8A847E', padding: 4 }}><X style={{ width: 20, height: 20 }} /></button>}
         </div>
         {showDrop && results.length > 0 && (
           <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 6, background: '#141A10', border: '1px solid rgba(197,151,87,0.12)', borderRadius: 4, maxHeight: 480, overflowY: 'auto', boxShadow: '0 12px 40px rgba(0,0,0,0.4)' }}>
@@ -276,7 +264,7 @@ export default function Profiles() {
                   </div>
                   <div>
                     <div style={{ fontSize: 20, fontWeight: 500, color: '#D6D1CC' }}>{p.name}</div>
-                    <div style={{ fontSize: 16, color: '#5A5550', marginTop: 4 }}>
+                    <div style={{ fontSize: 16, color: '#8A847E', marginTop: 4 }}>
                       {p.record} · {p.numRaces} races · ${p.totalEarnings?.toLocaleString()}
                       {p.hasGPS && <span style={{ color: '#52B788', marginLeft: 8 }}>GPS</span>}
                     </div>
@@ -321,26 +309,26 @@ export default function Profiles() {
                   {h.gpsScore != null && (
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontFamily: 'var(--font-mono)', fontSize: 44, fontWeight: 600, color: '#C59757' }}>{h.gpsScore}</div>
-                      <div style={{ fontSize: 15, color: '#5A5550', marginTop: 4 }}>GPS Score</div>
+                      <div style={{ fontSize: 15, color: '#8A847E', marginTop: 4 }}>GPS Score</div>
                     </div>
                   )}
                 </div>
               </div>
 
               {/* Stats grid */}
-              <div style={{ padding: '40px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 30 }}>
+              <div style={{ padding: '40px 48px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))', gap: 30 }}>
                 {[
                   ['Total Earnings', `$${h.totalEarnings?.toLocaleString() || '0'}`, '#C59757'],
                   ['Avg Finish', h.avgFinish || '–', '#D6D1CC'],
                   ['Avg Purse', `$${h.avgPurse?.toLocaleString() || '0'}`, '#D6D1CC'],
                   ['Avg Field', h.avgFieldSize || '–', '#D6D1CC'],
-                  ['Best Speed', h.bestPeak ? `${h.bestPeak} mph` : '–', h.hasGPS ? '#D6D1CC' : '#5A5550'],
-                  ['Ground Loss', h.avgGroundLoss != null ? `${h.avgGroundLoss}m` : '–', h.hasGPS ? '#D6D1CC' : '#5A5550'],
-                  ['Stride Fade', h.strideFade != null ? `${h.strideFade}%` : '–', h.hasGPS ? '#D6D1CC' : '#5A5550'],
+                  ['Best Speed', h.bestPeak ? `${h.bestPeak} mph` : '–', h.hasGPS ? '#D6D1CC' : '#8A847E'],
+                  ['Ground Loss', h.avgGroundLoss != null ? `${h.avgGroundLoss}m` : '–', h.hasGPS ? '#D6D1CC' : '#8A847E'],
+                  ['Stride Fade', h.strideFade != null ? `${h.strideFade}%` : '–', h.hasGPS ? '#D6D1CC' : '#8A847E'],
                   ['Total Starts', `${h.numRaces}`, '#D6D1CC'],
                 ].map(([l, v, c]) => (
                   <div key={l}>
-                    <div style={{ fontSize: 16, color: '#5A5550', marginBottom: 7, letterSpacing: '1px', textTransform: 'uppercase' }}>{l}</div>
+                    <div style={{ fontSize: 16, color: '#8A847E', marginBottom: 7, letterSpacing: '1px', textTransform: 'uppercase' }}>{l}</div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 23, fontWeight: 500, color: c }}>{v}</div>
                   </div>
                 ))}
@@ -383,7 +371,7 @@ export default function Profiles() {
                       const isNeutral = Math.abs(d.delta) < (d.neutralIf ?? 0.05);
                       const isBetter = d.lowerBetter ? d.delta < 0 : d.delta > 0;
                       const arrow = isNeutral ? '–' : isBetter ? '▲' : '▼';
-                      const deltaColor = isNeutral ? '#5A5550' : isBetter ? '#52B788' : '#C2653A';
+                      const deltaColor = isNeutral ? '#8A847E' : isBetter ? '#52B788' : '#C2653A';
                       const traitLabel = isNeutral
                         ? `matches the field on ${d.trait}`
                         : `${isBetter ? 'better' : 'worse'} ${d.trait}`;
@@ -397,7 +385,7 @@ export default function Profiles() {
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontFamily: 'var(--font-mono)', marginBottom: 3 }}>
                             <span style={{ color: color, fontWeight: 600 }}>{d.value}</span>
-                            <span style={{ color: '#5A5550' }}>field avg: {d.avg}</span>
+                            <span style={{ color: '#8A847E' }}>field avg: {d.avg}</span>
                           </div>
                           <div style={{ fontSize: 14, color: deltaColor, opacity: 0.85, fontStyle: 'italic' }}>
                             {traitLabel}
@@ -434,7 +422,7 @@ export default function Profiles() {
                   padding: '14px 28px', borderRadius: 4, cursor: 'pointer', fontSize: 18, fontWeight: 500, transition: 'all 250ms',
                   background: activeTab === key ? '#141A10' : 'transparent',
                   border: activeTab === key ? '1px solid rgba(197,151,87,0.15)' : '1px solid rgba(197,151,87,0.04)',
-                  color: activeTab === key ? '#C59757' : '#5A5550',
+                  color: activeTab === key ? '#C59757' : '#8A847E',
                 }}>{label}</button>
               ))}
             </div>
@@ -458,13 +446,13 @@ export default function Profiles() {
                       <div>
                         <div className="label" style={{ fontSize: 14, marginBottom: 12 }}>Career Earnings</div>
                         <div style={{ fontFamily: 'var(--font-serif)', fontSize: 54, fontWeight: 400, color: '#C59757' }}>${h.totalEarnings?.toLocaleString() || '0'}</div>
-                        <div style={{ fontSize: 17, color: '#5A5550', marginTop: 6 }}>from {h.numRaces} starts</div>
+                        <div style={{ fontSize: 17, color: '#8A847E', marginTop: 6 }}>from {h.numRaces} starts</div>
                       </div>
                       <div style={{ display: 'flex', gap: 28 }}>
                         {[['Wins', h.wins, '#52B788'], ['Places', h.places, '#E8B86D'], ['Starts', h.numRaces, '#8A847E']].map(([l, v, c]) => (
                           <div key={l} style={{ textAlign: 'center' }}>
                             <div style={{ fontFamily: 'var(--font-serif)', fontSize: 36, color: c }}>{v}</div>
-                            <div style={{ fontSize: 14, color: '#5A5550', marginTop: 4, letterSpacing: '1px', textTransform: 'uppercase' }}>{l}</div>
+                            <div style={{ fontSize: 14, color: '#8A847E', marginTop: 4, letterSpacing: '1px', textTransform: 'uppercase' }}>{l}</div>
                           </div>
                         ))}
                       </div>
@@ -474,8 +462,8 @@ export default function Profiles() {
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={earningsData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
                             <CartesianGrid stroke="rgba(197,151,87,0.04)" strokeDasharray="3 3" />
-                            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#5A5550' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
-                            <YAxis tick={{ fontSize: 10, fill: '#5A5550' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
+                            <XAxis dataKey="label" tick={{ fontSize: 10, fill: '#8A847E' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
+                            <YAxis tick={{ fontSize: 10, fill: '#8A847E' }} axisLine={false} tickLine={false} tickFormatter={v => `$${(v / 1000).toFixed(0)}k`} />
                             <Tooltip content={<CustomTip />} />
                             <Bar dataKey="earned" name="Earned" radius={[3, 3, 0, 0]}>
                               {earningsData.map((d, i) => <Cell key={i} fill={d.earned > 0 ? '#C59757' : '#1C2418'} fillOpacity={d.earned > 0 ? 1 : 0.3} />)}
@@ -493,7 +481,7 @@ export default function Profiles() {
           /* Browse */
           <motion.div key="browse" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <div className="label" style={{ marginBottom: 16, fontSize: 16 }}>Top-rated horses</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 16 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(240px, 100%), 1fr))', gap: 16 }}>
               {topHorses.map(p => {
                 const sc = SC[p.style] || '#8A847E';
                 return (
@@ -515,7 +503,7 @@ export default function Profiles() {
                           <span style={{ fontSize: 15, color: '#8A847E' }}>{p.record}</span>
                           <span style={{ fontSize: 15, color: '#C59757' }}>${p.totalEarnings?.toLocaleString()}</span>
                         </div>
-                        <div style={{ display: 'flex', gap: 13, fontSize: 14, color: '#5A5550' }}>
+                        <div style={{ display: 'flex', gap: 13, fontSize: 14, color: '#8A847E' }}>
                           <span>{p.numRaces} races</span>
                           {p.hasGPS && <span style={{ color: '#52B788' }}>{p.numGPSRaces} GPS</span>}
                           <span>Avg fin: {p.avgFinish || '–'}</span>

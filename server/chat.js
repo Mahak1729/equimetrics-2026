@@ -3,11 +3,31 @@
 import { buildSystemPrompt, findRelevantHorses, findRelevantRaces } from './data/buildContext.js';
 
 export const MODEL = 'claude-sonnet-5';
-export const MAX_TOKENS = 2048;
+export const MAX_TOKENS = 1024;
 
+// Cost controls. These bound what a single visitor can spend, but the counters
+// live in memory and a serverless platform runs many instances, so they are a
+// speed bump rather than a guarantee. The only hard ceiling is a spend limit
+// set on the Anthropic account itself; see the README.
 const RATE_WINDOW_MS = 60 * 1000;
-const MAX_REQUESTS = 15;
+const MAX_REQUESTS = 8;              // per IP per minute
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_REQUESTS_PER_DAY = 200;    // per IP per day
+const MAX_TURNS_SENT = 6;            // history turns forwarded upstream
+const MAX_INSTANCE_REQUESTS_PER_DAY = 2000; // across all callers on this instance
+
 const rateLimit = {};
+const dailyLimit = {};
+let instanceDay = Date.now();
+let instanceCount = 0;
+
+// Keeps the limiter maps from growing without bound on a long-lived instance.
+function sweep(store, now, ttl) {
+  if (Object.keys(store).length < 5000) return;
+  for (const [k, v] of Object.entries(store)) {
+    if (now - v.start > ttl) delete store[k];
+  }
+}
 
 const DEFAULT_ALLOWED_ORIGINS = [
   'http://localhost:5173',
@@ -38,10 +58,28 @@ export function isAllowedOrigin(origin, env = process.env) {
   return false;
 }
 
-// Fixed-window limiter, in memory. Per function instance, so treat it as a
-// speed bump rather than a hard guarantee.
+/**
+ * Fixed-window limiter with three ceilings: per-IP per-minute, per-IP per-day,
+ * and a whole-instance daily cap so one busy day cannot run away even if the
+ * caller rotates addresses. In memory, so per function instance.
+ */
 export function isRateLimited(ip) {
   const now = Date.now();
+
+  if (now - instanceDay > DAY_MS) { instanceDay = now; instanceCount = 0; }
+  instanceCount++;
+  if (instanceCount > MAX_INSTANCE_REQUESTS_PER_DAY) return true;
+
+  sweep(rateLimit, now, RATE_WINDOW_MS);
+  sweep(dailyLimit, now, DAY_MS);
+
+  if (!dailyLimit[ip] || now - dailyLimit[ip].start > DAY_MS) {
+    dailyLimit[ip] = { start: now, count: 1 };
+  } else {
+    dailyLimit[ip].count++;
+    if (dailyLimit[ip].count > MAX_REQUESTS_PER_DAY) return true;
+  }
+
   if (!rateLimit[ip] || now - rateLimit[ip].start > RATE_WINDOW_MS) {
     rateLimit[ip] = { start: now, count: 1 };
     return false;
@@ -99,7 +137,7 @@ export async function requestCompletion(client, messages) {
     thinking: { type: 'adaptive' },
     output_config: { effort: 'low' },
     system: buildSystemBlocks(messages),
-    messages: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
+    messages: messages.slice(-MAX_TURNS_SENT).map(m => ({ role: m.role, content: m.content })),
   });
   return { content: extractText(response), model: response.model };
 }

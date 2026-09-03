@@ -16,8 +16,14 @@ export default function RaceReplay({ race }) {
   const progress = (currentGate / (totalGates - 1)) * 100;
   const currentData = gateData[currentGate];
 
-  // Reset when race changes
-  useEffect(() => { setCurrentGate(0); setIsPlaying(false); }, [race.id]);
+  // Reset when the race changes. Adjusting during render is the documented
+  // alternative to resetting inside an effect, and avoids a wasted pass.
+  const [renderedRaceId, setRenderedRaceId] = useState(race.id);
+  if (renderedRaceId !== race.id) {
+    setRenderedRaceId(race.id);
+    setCurrentGate(0);
+    setIsPlaying(false);
+  }
 
   useEffect(() => {
     if (isPlaying) {
@@ -44,13 +50,13 @@ export default function RaceReplay({ race }) {
           <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 500, color: '#D6D1CC' }}>
             {race.track} Race {race.raceNumber}
           </h3>
-          <p style={{ fontSize: 15, color: '#5A5550', fontFamily: 'var(--font-mono)', marginTop: 6 }}>
+          <p style={{ fontSize: 15, color: '#8A847E', fontFamily: 'var(--font-mono)', marginTop: 6 }}>
             {race.distance} {race.surface} · {race.type} · {race.purse} · {race.fieldSize} runners
           </p>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontFamily: 'var(--font-serif)', fontSize: 36, fontWeight: 400, color: '#C59757' }}>{currentData.label}</div>
-          <div style={{ fontSize: 15, color: '#5A5550' }}>
+          <div style={{ fontSize: 15, color: '#8A847E' }}>
             {currentGate === totalGates - 1 ? 'Final' : `Gate ${currentData.gate}`}
           </div>
         </div>
@@ -73,7 +79,7 @@ export default function RaceReplay({ race }) {
           return (
             <div key={horse.name} style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10 }}>
               {/* Position */}
-              <div style={{ width: 32, fontFamily: 'var(--font-serif)', fontSize: 22, color: isLeader ? '#C59757' : '#5A5550', textAlign: 'center', flexShrink: 0 }}>
+              <div style={{ width: 32, fontFamily: 'var(--font-serif)', fontSize: 22, color: isLeader ? '#C59757' : '#8A847E', textAlign: 'center', flexShrink: 0 }}>
                 {position}
               </div>
 
@@ -115,12 +121,12 @@ export default function RaceReplay({ race }) {
         <button onClick={() => setIsPlaying(!isPlaying)} className="btn-primary" style={{ padding: '12px 16px', fontSize: 0, lineHeight: 0 }}>
           {isPlaying ? <Pause style={{ width: 18, height: 18 }} /> : <Play style={{ width: 18, height: 18, marginLeft: 1 }} />}
         </button>
-        <button onClick={reset} style={{ width: 44, height: 44, borderRadius: 4, border: '1px solid rgba(197,151,87,0.06)', background: 'transparent', color: '#5A5550', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <button onClick={reset} style={{ width: 44, height: 44, borderRadius: 4, border: '1px solid rgba(197,151,87,0.06)', background: 'transparent', color: '#8A847E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <RotateCcw style={{ width: 17, height: 17 }} />
         </button>
         <div style={{ display: 'flex', gap: 6 }}>
           {[1, 2, 4].map(s => (
-            <button key={s} onClick={() => setSpeed(s)} style={{ padding: '8px 14px', borderRadius: 3, fontSize: 15, fontFamily: 'var(--font-mono)', fontWeight: 500, cursor: 'pointer', background: speed === s ? 'rgba(197,151,87,0.1)' : 'transparent', color: speed === s ? '#C59757' : '#5A5550', border: speed === s ? '1px solid rgba(197,151,87,0.15)' : '1px solid transparent' }}>
+            <button key={s} onClick={() => setSpeed(s)} style={{ padding: '8px 14px', borderRadius: 3, fontSize: 15, fontFamily: 'var(--font-mono)', fontWeight: 500, cursor: 'pointer', background: speed === s ? 'rgba(197,151,87,0.1)' : 'transparent', color: speed === s ? '#C59757' : '#8A847E', border: speed === s ? '1px solid rgba(197,151,87,0.15)' : '1px solid transparent' }}>
               {s}x
             </button>
           ))}

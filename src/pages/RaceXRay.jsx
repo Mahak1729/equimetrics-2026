@@ -180,7 +180,7 @@ export default function RaceXRay() {
   const trackName = race ? (TRACK_NAMES[race.track] || race.track) : '';
 
   return (
-    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px 40px 80px' }}>
+    <div style={{ maxWidth: 1280, margin: '0 auto', padding: '120px clamp(18px, 4vw, 40px) 80px' }}>
       <motion.div {...fadeUp}>
         <div className="label" style={{ color: '#C59757', marginBottom: 14, fontSize: 18 }}>Analysis</div>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5vw, 54px)', fontWeight: 500, color: '#D6D1CC', marginBottom: 14 }}>Deep Dive</h1>
@@ -201,7 +201,7 @@ export default function RaceXRay() {
       {/* Search */}
       <motion.div {...fadeUp} transition={{ delay: 0.05 }} style={{ marginBottom: 48, position: 'relative', zIndex: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '20px 26px', borderRadius: 4, background: '#141A10', border: '1px solid rgba(197,151,87,0.1)' }}>
-          <Search style={{ width: 24, height: 24, color: '#5A5550', flexShrink: 0 }} />
+          <Search style={{ width: 24, height: 24, color: '#8A847E', flexShrink: 0 }} />
           <input type="text" placeholder="Search by track, race number, or horse name..."
             value={query}
             onChange={e => { setQuery(e.target.value); setShowDrop(true); }}
@@ -210,7 +210,7 @@ export default function RaceXRay() {
           />
           {query && (
             <button onClick={() => { setQuery(''); setShowDrop(false); }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#5A5550', padding: 4 }}>
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8A847E', padding: 4 }}>
               <X style={{ width: 20, height: 20 }} />
             </button>
           )}
@@ -227,7 +227,7 @@ export default function RaceXRay() {
                     <div style={{ fontSize: 20, fontWeight: 500, color: '#D6D1CC' }}>
                       {r.trackName || TRACK_NAMES[r.track] || r.track} Race {r.raceNum}
                     </div>
-                    <div style={{ fontSize: 16, color: '#5A5550', marginTop: 4 }}>
+                    <div style={{ fontSize: 16, color: '#8A847E', marginTop: 4 }}>
                       {r.date} · {r.distance} {r.surface} · {r.type} · {r.horseCount || r.horses?.length} horses GPS
                     </div>
                   </div>
@@ -255,7 +255,7 @@ export default function RaceXRay() {
               <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 36, fontWeight: 500, color: '#D6D1CC' }}>
                 {trackName} Race {race.raceNum}
               </h2>
-              <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>
+              <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#8A847E' }}>
                 {race.date} · {race.distance} {race.surface} · {race.type} · ${race.purse?.toLocaleString()}
               </span>
             </div>
@@ -270,7 +270,7 @@ export default function RaceXRay() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
                     <Trophy style={{ width: 22, height: 22, color: '#C59757' }} />
                     <span style={{ fontFamily: 'var(--font-serif)', fontSize: 30, fontWeight: 500, color: '#C59757' }}>{winner.name}</span>
-                    <span style={{ fontSize: 19, color: '#5A5550' }}>Winner</span>
+                    <span style={{ fontSize: 19, color: '#8A847E' }}>Winner</span>
                   </div>
                   <div style={{ display: 'flex', gap: 24, fontSize: 16, flexWrap: 'wrap' }}>
                     {winner.peakMPH && <span style={{ color: '#8A847E' }}>Peak: <span style={{ fontFamily: 'var(--font-mono)', color: '#D6D1CC' }}>{winner.peakMPH} mph</span></span>}
@@ -287,7 +287,7 @@ export default function RaceXRay() {
               {metrics.map((s, i) => (
                 <div key={s.label} style={{ textAlign: 'center', padding: '0 24px', borderRight: i < 3 ? '1px solid rgba(197,151,87,0.06)' : 'none' }}>
                   <div style={{ fontFamily: 'var(--font-serif)', fontSize: 44, fontWeight: 400, color: '#C59757' }}>
-                    {s.value}<span style={{ fontSize: 20, color: '#5A5550', marginLeft: 3 }}>{s.unit}</span>
+                    {s.value}<span style={{ fontSize: 20, color: '#8A847E', marginLeft: 3 }}>{s.unit}</span>
                   </div>
                   <div className="label" style={{ marginTop: 12, fontSize: 13 }}>{s.label}</div>
                   <div style={{ fontSize: 17, color: '#8A847E', marginTop: 6 }}>{s.sub}</div>
@@ -301,8 +301,8 @@ export default function RaceXRay() {
                 const on = activeHorses.includes(h.name);
                 return (
                   <button key={h.name} onClick={() => toggleHorse(h.name)}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 4, fontSize: 17, cursor: 'pointer', background: 'transparent', color: on ? '#D6D1CC' : '#5A5550', border: 'none', transition: 'opacity 300ms', opacity: on ? 1 : 0.4 }}>
-                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: on ? h.color : '#5A5550' }} />
+                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 4, fontSize: 17, cursor: 'pointer', background: 'transparent', color: on ? '#D6D1CC' : '#8A847E', border: 'none', transition: 'opacity 300ms', opacity: on ? 1 : 0.4 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: on ? h.color : '#8A847E' }} />
                     {h.name}
                     {h.position === 1 && <Trophy style={{ width: 13, height: 13, color: '#C59757' }} />}
                   </button>
@@ -318,7 +318,7 @@ export default function RaceXRay() {
                     <div className="label" style={{ marginBottom: 10, fontSize: 13 }}>Velocity</div>
                     <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 500, color: '#D6D1CC' }}>Speed Traces</h3>
                   </div>
-                  <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>MPH</span>
+                  <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#8A847E' }}>MPH</span>
                 </div>
                 <ResponsiveContainer width="100%" height={320}>
                   <AreaChart data={speedData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
@@ -331,8 +331,8 @@ export default function RaceXRay() {
                       ))}
                     </defs>
                     <CartesianGrid stroke="rgba(197,151,87,0.03)" strokeDasharray="3 3" />
-                    <XAxis dataKey="gate" tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
-                    <YAxis tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} domain={['dataMin - 2', 'dataMax + 1']} />
+                    <XAxis dataKey="gate" tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
+                    <YAxis tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} domain={['dataMin - 2', 'dataMax + 1']} />
                     <Tooltip content={<CustomTip />} />
                     {horses.map(h => activeHorses.includes(h.name) ? (
                       <Area key={h.name} type="monotone" dataKey={h.name} stroke={h.color} strokeWidth={h.position === 1 ? 2.5 : 1.5}
@@ -344,7 +344,7 @@ export default function RaceXRay() {
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 28, marginBottom: 28 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(440px, 100%), 1fr))', gap: 28, marginBottom: 28 }}>
               {/* Ground Loss */}
               <div className="card-flat" style={{ padding: 36 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
@@ -352,13 +352,13 @@ export default function RaceXRay() {
                     <div className="label" style={{ marginBottom: 10, fontSize: 13 }}>GPS Exclusive</div>
                     <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 500, color: '#D6D1CC' }}>Ground Loss</h3>
                   </div>
-                  <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>Meters</span>
+                  <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#8A847E' }}>Meters</span>
                 </div>
                 <p style={{ fontSize: 17, color: '#8A847E', marginBottom: 24, lineHeight: 1.7 }}>
                   Extra distance traveled vs. rail path.
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                  {[...horses].sort((a, b) => (b.groundLoss || 0) - (a.groundLoss || 0)).map((h, i) => {
+                  {[...horses].sort((a, b) => (b.groundLoss || 0) - (a.groundLoss || 0)).map((h) => {
                     const maxLoss = Math.max(...horses.map(x => x.groundLoss || 0), 1);
                     return (
                       <div key={h.name}>
@@ -368,7 +368,7 @@ export default function RaceXRay() {
                             <span style={{ fontSize: 18, color: h.position === 1 ? '#C59757' : '#D6D1CC' }}>{h.name}</span>
                             {h.position === 1 && <Trophy style={{ width: 13, height: 13, color: '#C59757' }} />}
                           </div>
-                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 19, color: h.groundLoss > 15 ? '#C59757' : '#5A5550' }}>+{h.groundLoss || 0}m</span>
+                          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 19, color: h.groundLoss > 15 ? '#C59757' : '#8A847E' }}>+{h.groundLoss || 0}m</span>
                         </div>
                         <div style={{ height: 4, borderRadius: 2, background: '#1C2418', overflow: 'hidden' }}>
                           <div style={{ height: '100%', width: `${((h.groundLoss || 0) / maxLoss) * 100}%`, borderRadius: 2, background: h.color, transition: 'width 600ms ease' }} />
@@ -387,7 +387,7 @@ export default function RaceXRay() {
                       <div className="label" style={{ marginBottom: 10, fontSize: 13 }}>Biomechanics</div>
                       <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 28, fontWeight: 500, color: '#D6D1CC' }}>Stride Analysis</h3>
                     </div>
-                    <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#5A5550' }}>Meters</span>
+                    <span style={{ fontSize: 18, fontFamily: 'var(--font-mono)', color: '#8A847E' }}>Meters</span>
                   </div>
                   <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={strideData} margin={{ top: 5, right: 5, left: -15, bottom: 5 }}>
@@ -400,8 +400,8 @@ export default function RaceXRay() {
                         ))}
                       </defs>
                       <CartesianGrid stroke="rgba(197,151,87,0.03)" strokeDasharray="3 3" />
-                      <XAxis dataKey="gate" tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
-                      <YAxis tick={{ fontSize: 10, fill: '#5A5550', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} domain={['dataMin - 0.5', 'dataMax + 0.3']} />
+                      <XAxis dataKey="gate" tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={{ stroke: 'rgba(197,151,87,0.06)' }} tickLine={false} />
+                      <YAxis tick={{ fontSize: 10, fill: '#8A847E', fontFamily: 'var(--font-mono)' }} axisLine={false} tickLine={false} domain={['dataMin - 0.5', 'dataMax + 0.3']} />
                       <Tooltip content={<CustomTip />} />
                       {horses.map(h => activeHorses.includes(h.name) ? (
                         <Area key={h.name} type="monotone" dataKey={h.name} stroke={h.color} strokeWidth={h.position === 1 ? 2.5 : 1.5}
@@ -448,10 +448,10 @@ export default function RaceXRay() {
                             {isWinner && <Trophy style={{ width: 15, height: 15, color: '#C59757' }} />}
                           </div>
                         </td>
-                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: '#5A5550' }}>{h.position || '–'}</td>
-                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: (h.groundLoss || 0) > 15 ? '#C59757' : '#5A5550' }}>+{h.groundLoss || 0}m</td>
+                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{h.position || '–'}</td>
+                        <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: (h.groundLoss || 0) > 15 ? '#C59757' : '#8A847E' }}>+{h.groundLoss || 0}m</td>
                         <td style={{ padding: '18px 36px', fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>{h.closingMPH || '–'} mph</td>
-                        <td style={{ padding: '18px 36px', fontSize: 17, color: improved ? '#C59757' : '#5A5550' }}>{improved ? 'Undervalued' : 'Fair'}</td>
+                        <td style={{ padding: '18px 36px', fontSize: 17, color: improved ? '#C59757' : '#8A847E' }}>{improved ? 'Undervalued' : 'Fair'}</td>
                       </tr>
                     );
                   })}
@@ -463,7 +463,7 @@ export default function RaceXRay() {
           /* Browse top races */
           <motion.div key="browse" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
             <div className="label" style={{ marginBottom: 20, fontSize: 15 }}>Recent GPS Races</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(360px, 100%), 1fr))', gap: 20 }}>
               {topRaces.map((r, idx) => {
                 return (
                   <button key={r.id} onClick={() => selectRace(r)} className="card"
@@ -488,7 +488,7 @@ export default function RaceXRay() {
                           <span style={{ fontSize: 18, color: '#C59757' }}>{r.winnerName}</span>
                         </div>
                       )}
-                      <span style={{ fontSize: 15, color: '#5A5550' }}>
+                      <span style={{ fontSize: 15, color: '#8A847E' }}>
                         {r.type} · ${r.purse?.toLocaleString()}
                       </span>
                     </div>

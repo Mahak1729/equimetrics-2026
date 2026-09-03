@@ -42,9 +42,9 @@ export default function Home() {
       </section>
 
       {/* ═══ STATS BAR ═══ */}
-      <section style={{ maxWidth: 1280, margin: '-60px auto 0', padding: '0 40px', position: 'relative', zIndex: 20 }}>
+      <section style={{ maxWidth: 1280, margin: '-60px auto 0', padding: '0 clamp(18px, 4vw, 40px)', position: 'relative', zIndex: 20 }}>
         <motion.div {...fadeUp} transition={{ duration: 0.7 }}>
-          <div className="card-flat" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', padding: '52px 0' }}>
+          <div className="card-flat" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(160px, 100%), 1fr))', padding: 'clamp(28px, 5vw, 52px) 0' }}>
             {[
               { value: '12,919', label: 'Horses Profiled' },
               { value: '52,767', label: 'Race Starts Analyzed' },
@@ -52,10 +52,10 @@ export default function Home() {
               { value: '8.1', label: 'Avg Field Size' },
             ].map((stat, i) => (
               <div key={stat.label} style={{
-                textAlign: 'center', padding: '0 28px',
+                textAlign: 'center', padding: '12px clamp(12px, 2vw, 28px)', minWidth: 0,
                 borderRight: i < 3 ? '1px solid rgba(197, 151, 87, 0.08)' : 'none',
               }}>
-                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 52, fontWeight: 400, color: '#C59757', marginBottom: 12 }}>
+                <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(30px, 5vw, 52px)', fontWeight: 400, color: '#C59757', marginBottom: 12 }}>
                   {stat.value}
                 </div>
                 <div className="label" style={{ fontSize: 14 }}>{stat.label}</div>
@@ -77,7 +77,7 @@ export default function Home() {
           </p>
         </motion.div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: 28 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(500px, 100%), 1fr))', gap: 28 }}>
           {[
             { label: 'Replay', title: 'Live Replay', desc: 'Gate-by-gate GPS tracking. Watch positions evolve in real time with animated telemetry data from every horse in the field.', to: '/live-replay' },
             { label: 'Analysis', title: 'Deep Dive', desc: 'Speed traces, stride patterns, and ground loss metrics. See what chart callers with binoculars physically cannot observe.', to: '/deep-dive' },
@@ -138,7 +138,7 @@ export default function Home() {
           <span style={{ fontSize: 18, fontWeight: 600, color: '#D6D1CC' }}>
             EQUI<span style={{ color: '#C59757' }}>METRICS</span>
           </span>
-          <p style={{ fontSize: 15, color: '#5A5550' }}>
+          <p style={{ fontSize: 15, color: '#8A847E' }}>
             985,000+ GPS data points &middot; 32 tracks &middot; Data by Equibase &middot; 2026 Econ Games
           </p>
           <div style={{ display: 'flex', gap: 28, fontSize: 16 }}>
@@ -148,9 +148,9 @@ export default function Home() {
               { to: '/forecast', label: 'Forecast' },
               { to: '/gps-edge', label: 'GPS Edge' },
             ].map(l => (
-              <Link key={l.to} to={l.to} style={{ color: '#5A5550', textDecoration: 'none', transition: 'color 300ms' }}
+              <Link key={l.to} to={l.to} style={{ color: '#8A847E', textDecoration: 'none', transition: 'color 300ms' }}
                 onMouseEnter={e => e.currentTarget.style.color = '#C59757'}
-                onMouseLeave={e => e.currentTarget.style.color = '#5A5550'}>
+                onMouseLeave={e => e.currentTarget.style.color = '#8A847E'}>
                 {l.label}
               </Link>
             ))}
