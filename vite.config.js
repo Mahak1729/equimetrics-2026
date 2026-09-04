@@ -68,6 +68,24 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
+    build: {
+      rollupOptions: {
+        output: {
+          // Split the heavy libraries out of the page chunks. Each is used by
+          // only part of the app, and separating them lets a visitor download
+          // just what the route needs and keeps the rest cached across deploys.
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return
+            if (id.includes('mapbox-gl')) return 'vendor-map'
+            if (id.includes('recharts') || id.includes('d3-') || id.includes('victory')) return 'vendor-charts'
+            if (id.includes('framer-motion') || id.includes('motion-dom') || id.includes('motion-utils')) return 'vendor-motion'
+            if (id.includes('react-router') || id.includes('/react-dom/') || id.includes('/react/')) return 'vendor-react'
+            return 'vendor'
+          },
+        },
+      },
+      chunkSizeWarningLimit: 900,
+    },
     plugins: [
       react(),
       tailwindcss(),

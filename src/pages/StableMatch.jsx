@@ -69,7 +69,7 @@ function SwipeCard({ horse, onSwipe, isTop, exitDirection }) {
         {/* Horse image: left half */}
         <div style={{ position: 'relative', flex: '0 0 50%', overflow: 'hidden' }}>
           <img
-            src={getPortrait(horse.name)}
+            src={getPortrait(horse.name)} loading="lazy" decoding="async"
             alt={horse.name}
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%' }}
             draggable={false}
@@ -359,7 +359,7 @@ function MatchesScreen({ matches, onReset }) {
                   width: 64, height: 64, borderRadius: 6, overflow: 'hidden', flexShrink: 0,
                   border: `2px solid ${color}40`,
                 }}>
-                  <img src={getPortrait(horse.name)} alt=""
+                  <img src={getPortrait(horse.name)} loading="lazy" decoding="async" alt=""
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>

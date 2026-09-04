@@ -329,7 +329,7 @@ export default function EquiBets() {
       {/* Header */}
       <motion.div {...fadeUp}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 22, marginBottom: 16 }}>
-          <img src="/horse.gif" alt="" style={{ width: 128, height: 128, borderRadius: 10 }} />
+          <img src="/horse.webp" loading="lazy" decoding="async" alt="" style={{ width: 128, height: 128, borderRadius: 10 }} />
           <div>
             <div className="label" style={{ color: '#C59757', marginBottom: 8, fontSize: 18 }}>Prediction Markets</div>
             <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: 'clamp(38px, 5.5vw, 54px)', fontWeight: 500, color: '#D6D1CC' }}>
@@ -509,7 +509,7 @@ export default function EquiBets() {
             {/* Rewards info */}
             <div className="card-flat" style={{ padding: 28, marginTop: 24, borderColor: 'rgba(197,151,87,0.12)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                <img src="/horse.gif" alt="" style={{ width: 100, height: 100, borderRadius: 10, flexShrink: 0 }} />
+                <img src="/horse.webp" loading="lazy" decoding="async" alt="" style={{ width: 100, height: 100, borderRadius: 10, flexShrink: 0 }} />
                 <div>
                   <h3 style={{ fontFamily: 'var(--font-serif)', fontSize: 20, fontWeight: 500, color: '#D6D1CC', marginBottom: 6 }}>
                     Redeem Haysticks for Real Tickets
