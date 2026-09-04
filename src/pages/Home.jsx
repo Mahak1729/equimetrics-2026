@@ -11,6 +11,7 @@ export default function Home() {
   // that is not metered or slow, and only when motion is welcome. Everyone
   // else keeps the poster, which is visually near-identical when still.
   const [showVideo, setShowVideo] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const conn = navigator.connection || {};
@@ -39,7 +40,15 @@ export default function Home() {
           />
           {showVideo && (
             <video autoPlay loop muted playsInline preload="none" poster="/hero-poster.jpg"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              onCanPlay={() => setVideoReady(true)}
+              style={{
+                position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+                // The poster is the video's own first frame, so playback continues
+                // from exactly the image already on screen. The fade only masks any
+                // colour difference between the JPEG and the first decoded frame.
+                opacity: videoReady ? 1 : 0,
+                transition: 'opacity 400ms ease',
+              }}
               ref={el => { if (el) el.playbackRate = 2; }}>
               <source src="/horse.webm" type="video/webm" />
             </video>
