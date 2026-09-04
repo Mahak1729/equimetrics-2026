@@ -106,7 +106,7 @@ export default function RaceReplay({ race }) {
                     border: `2px solid ${horse.color}`,
                     boxShadow: `0 0 10px ${horse.color}40`,
                   }}>
-                    <img src={getPortrait(horse.name)} alt=""
+                    <img src={getPortrait(horse.name)} loading="lazy" decoding="async" alt=""
                       style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                 </motion.div>

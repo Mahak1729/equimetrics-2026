@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -6,16 +7,43 @@ import ComparisonTable from '../components/ComparisonTable';
 const fadeUp = { initial: { opacity: 0, y: 30 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true } };
 
 export default function Home() {
+  // The hero video is large. Load it only on a wide screen, over a connection
+  // that is not metered or slow, and only when motion is welcome. Everyone
+  // else keeps the poster, which is visually near-identical when still.
+  const [showVideo, setShowVideo] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const conn = navigator.connection || {};
+    const slow = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || '');
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const wide = window.matchMedia('(min-width: 900px)').matches;
+    if (wide && !slow && !reduced) {
+      // Wait for first paint so the video never competes with the content.
+      const id = window.setTimeout(() => setShowVideo(true), 600);
+      return () => window.clearTimeout(id);
+    }
+  }, []);
+
   return (
     <div>
       {/* ═══ HERO ═══ */}
       <section style={{ position: 'relative', height: '100vh', minHeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-          <video autoPlay loop muted playsInline preload="metadata"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            ref={el => { if (el) el.playbackRate = 2; }}>
-            <source src="/horse.webm" type="video/webm" />
-          </video>
+          {/* The poster paints immediately; the hero video is 41 MB, so it is
+              only fetched where it will not cost someone their data plan. */}
+          <img
+            src="/hero-poster.jpg"
+            alt=""
+            aria-hidden="true"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          {showVideo && (
+            <video autoPlay loop muted playsInline preload="none" poster="/hero-poster.jpg"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              ref={el => { if (el) el.playbackRate = 2; }}>
+              <source src="/horse.webm" type="video/webm" />
+            </video>
+          )}
           <div className="hero-overlay" style={{ position: 'absolute', inset: 0 }} />
         </div>
 

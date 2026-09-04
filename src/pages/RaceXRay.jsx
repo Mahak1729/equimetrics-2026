@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, Trophy } from 'lucide-react';
 import { SkeletonList, Skeleton, LoadError } from '../components/Loading';
+import { useJSON } from '../hooks/useJSON';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -48,32 +49,15 @@ export default function RaceXRay() {
   const [selected, setSelected] = useState(null);
   const [activeHorses, setActiveHorses] = useState([]);
   const [results, setResults] = useState([]);
-  const [browseRaces, setBrowseRaces] = useState([]);
-  const [totalGPSRaces, setTotalGPSRaces] = useState(155);
-  const [allRaces, setAllRaces] = useState([]);
+  // Shared hook: caches the payload so returning to this page is instant, and
+  // cancels in flight if the reader navigates away mid-load.
+  const { data: allRaces, loading, error, retry } = useJSON('/data/gps-races.json', []);
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [reloadKey, setReloadKey] = useState(0);
-  const retry = () => setReloadKey(k => k + 1);
-
-  // Fetch all GPS races from static file
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    fetch('/data/gps-races.json')
-      .then(r => { if (!r.ok) throw new Error(`Request failed (${r.status})`); return r.json(); })
-      .then(d => {
-      setAllRaces(d);
-      setTotalGPSRaces(d.length);
-      setBrowseRaces(d.slice(0, 12).map(r => {
-        const w = [...r.horses].sort((a, b) => (a.position || 99) - (b.position || 99))[0];
-        return { id: r.id, date: r.date, track: r.track, raceNum: r.raceNum, distance: r.distance, surface: r.surface, type: r.type, purse: r.purse, horseCount: r.horses.length, winnerName: w?.name, trackName: TRACK_NAMES[r.track] || r.track };
-      }));
-        setLoading(false);
-      })
-      .catch(err => { setError(err); setLoading(false); });
-  }, [reloadKey]);
+  const totalGPSRaces = allRaces.length || 155;
+  const browseRaces = useMemo(() => allRaces.slice(0, 12).map(r => {
+    const w = [...r.horses].sort((a, b) => (a.position || 99) - (b.position || 99))[0];
+    return { id: r.id, date: r.date, track: r.track, raceNum: r.raceNum, distance: r.distance, surface: r.surface, type: r.type, purse: r.purse, horseCount: r.horses.length, winnerName: w?.name, trackName: TRACK_NAMES[r.track] || r.track };
+  }), [allRaces]);
 
   // Instant in-memory search
   useEffect(() => {
@@ -264,7 +248,7 @@ export default function RaceXRay() {
             {winner && (
               <div className="card-flat" style={{ padding: '26px 36px', marginBottom: 32, borderColor: 'rgba(197,151,87,0.15)', display: 'flex', alignItems: 'center', gap: 24 }}>
                 <div style={{ width: 72, height: 72, borderRadius: 8, overflow: 'hidden', border: '2px solid rgba(197,151,87,0.3)', flexShrink: 0 }}>
-                  <img src={getPortrait(winner.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={getPortrait(winner.name)} loading="lazy" decoding="async" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
@@ -442,7 +426,7 @@ export default function RaceXRay() {
                         <td style={{ padding: '18px 36px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                             <div style={{ width: 38, height: 38, borderRadius: 5, overflow: 'hidden', border: `1px solid ${h.color}40`, flexShrink: 0 }}>
-                              <img src={getPortrait(h.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              <img src={getPortrait(h.name)} loading="lazy" decoding="async" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </div>
                             <span style={{ fontSize: 19, color: isWinner ? '#C59757' : '#D6D1CC', fontWeight: isWinner ? 600 : 400 }}>{h.name}</span>
                             {isWinner && <Trophy style={{ width: 15, height: 15, color: '#C59757' }} />}

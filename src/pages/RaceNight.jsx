@@ -143,7 +143,7 @@ export default function RaceNight() {
                       {horse.finalPos || '–'}
                     </div>
                     <div style={{ width: 42, height: 42, borderRadius: 5, overflow: 'hidden', border: `1px solid ${color}40` }}>
-                      <img src={getPortrait(horse.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={getPortrait(horse.name)} loading="lazy" decoding="async" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div style={{ fontSize: 20, fontWeight: 500, color: '#D6D1CC' }}>{horse.name}</div>
                     <div style={{ fontFamily: 'var(--font-mono)', fontSize: 18, color: '#8A847E' }}>Post {horse.post}</div>

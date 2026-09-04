@@ -315,7 +315,7 @@ export default function Preview() {
 
                     {/* Portrait thumbnail */}
                     <div style={{ width: 44, height: 44, borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(197,151,87,0.1)' }}>
-                      <img src={getPortrait(horse.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={getPortrait(horse.name)} loading="lazy" decoding="async" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
 
                     <div>

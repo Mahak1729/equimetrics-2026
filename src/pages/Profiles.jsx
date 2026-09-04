@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SkeletonCards, Skeleton, LoadError } from '../components/Loading';
 import { useJSON } from '../hooks/useJSON';
@@ -9,7 +9,9 @@ import {
 } from 'recharts';
 import { Search, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { getPortrait } from '../data/portraits';
-import JourneyMap from '../components/JourneyMap';
+// mapbox-gl is by far the heaviest dependency and the map only appears once a
+// horse is selected, so it is fetched on demand rather than with the page.
+const JourneyMap = lazy(() => import('../components/JourneyMap'));
 
 const SC = { 'Front Runner': '#52B788', Stalker: '#E8B86D', Closer: '#9B72CF' };
 
@@ -260,7 +262,7 @@ export default function Profiles() {
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                   <div style={{ width: 46, height: 46, borderRadius: 5, overflow: 'hidden', border: '1px solid rgba(197,151,87,0.1)', flexShrink: 0 }}>
-                    <img src={getPortrait(p.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={getPortrait(p.name)} loading="lazy" decoding="async" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   </div>
                   <div>
                     <div style={{ fontSize: 20, fontWeight: 500, color: '#D6D1CC' }}>{p.name}</div>
@@ -286,12 +288,12 @@ export default function Profiles() {
             {/* Portrait banner */}
             <div className="card-flat" style={{ overflow: 'hidden', marginBottom: 28 }}>
               <div style={{ position: 'relative', height: 280, overflow: 'hidden' }}>
-                <img src={getPortrait(h.name)} alt={h.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%', filter: 'brightness(0.45) saturate(0.6)' }} />
+                <img src={getPortrait(h.name)} loading="lazy" decoding="async" alt={h.name} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%', filter: 'brightness(0.45) saturate(0.6)' }} />
                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(13,17,10,0.2) 0%, rgba(13,17,10,0.95) 100%)' }} />
                 <div style={{ position: 'absolute', bottom: 28, left: 40, right: 40, display: 'flex', alignItems: 'end', justifyContent: 'space-between' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
                     <div style={{ width: 92, height: 92, borderRadius: 8, overflow: 'hidden', border: '2px solid rgba(197,151,87,0.3)', flexShrink: 0 }}>
-                      <img src={getPortrait(h.name)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <img src={getPortrait(h.name)} loading="lazy" decoding="async" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <div>
                       <h2 style={{ fontFamily: 'var(--font-serif)', fontSize: 44, fontWeight: 500, color: '#D6D1CC' }}>{h.name}</h2>
@@ -412,7 +414,9 @@ export default function Profiles() {
 
             {/* Journey Map */}
             {h.races?.length > 0 && (
-              <JourneyMap races={h.races} horseName={h.name} />
+              <Suspense fallback={<Skeleton height={320} radius={12} style={{ marginBottom: 28 }} />}>
+                <JourneyMap races={h.races} horseName={h.name} />
+              </Suspense>
             )}
 
             {/* Tabs */}
@@ -489,7 +493,7 @@ export default function Profiles() {
                     style={{ padding: 0, textAlign: 'left', cursor: 'pointer', background: '#141A10', overflow: 'hidden' }}>
                     {/* Square portrait */}
                     <div style={{ position: 'relative', paddingBottom: '100%', overflow: 'hidden' }}>
-                      <img src={getPortrait(p.name)} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 25%', filter: 'brightness(0.45) saturate(0.55)' }} />
+                      <img src={getPortrait(p.name)} loading="lazy" decoding="async" alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 25%', filter: 'brightness(0.45) saturate(0.55)' }} />
                       <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, transparent 30%, rgba(20,26,16,0.97) 100%)' }} />
                       {p.gpsScore != null && (
                         <div style={{ position: 'absolute', top: 12, right: 12, fontFamily: 'var(--font-mono)', fontSize: 19, fontWeight: 600, color: p.gpsScore >= 85 ? '#C59757' : '#8A847E', background: 'rgba(13,17,10,0.7)', padding: '6px 14px', borderRadius: 3, backdropFilter: 'blur(4px)' }}>
